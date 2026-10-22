@@ -90,7 +90,13 @@ h3{font-size:14px;font-weight:600}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding-block:10px;padding-left:28px;padding-right:max(16px,env(safe-area-inset-right,0px));min-height:64px}
 .top .crumb{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .top .crumb b{font-size:16.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top .crumb span{font-size:11.5px;color:var(--muted);letter-spacing:.03em}
+.bc{display:flex;align-items:center;gap:5px;margin:0 0 1px;padding:0;list-style:none;font-size:12px;color:var(--muted);white-space:nowrap;min-width:0;overflow:hidden}
+.bc li{flex:none}
+.bc li+li::before{content:'›';margin-right:5px;font-size:14px;line-height:1}
+.bc li:last-child{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.bc button{border:0;background:none;padding:2px 0;font:inherit;color:var(--accent);cursor:pointer}
+.bc button:hover{text-decoration:underline}
+#t-back svg.i{width:22px;height:22px;stroke-width:2.2}
 .clock{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .dotlive{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-soft);flex:none}
 .dotlive.off{background:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
@@ -252,7 +258,16 @@ table.t tbody tr.sel:hover td{background:var(--accent-soft)}
 .tabp{display:flex;flex-direction:column;gap:14px}
 .dact{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface-2)}
 .modal .mf{padding:12px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.x{border:0;background:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1}
+.x{display:grid}
+/* nút cần quyền: ẩn khi vai trò hiện tại không có quyền (body[data-perms] do userUI gán) */
+body:not([data-perms~="cfg.edit"]) [data-perm~="cfg.edit"],body:not([data-perms~="cfg.approve"]) [data-perm~="cfg.approve"],
+body:not([data-perms~="deal.submit"]) [data-perm~="deal.submit"],body:not([data-perms~="sales.ask"]) [data-perm~="sales.ask"],
+body[data-perms~="deal.submit"] [data-noperm~="deal.submit"],body[data-perms~="sales.ask"] [data-noperm~="sales.ask"]{display:none!important}
+.x,#nav-close{flex:none;width:38px;height:38px;place-items:center;padding:0 0 2px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink-2);font-size:28px;line-height:1;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.x:hover,#nav-close:hover{background:var(--surface-2);border-color:var(--muted);color:var(--ink)}
+@media (max-width:560px){.x,#nav-close{width:46px;height:46px;font-size:34px;border-radius:12px}#t-close{display:none}.top{gap:8px}}
+@media (max-width:1100px){.top{flex-wrap:wrap;row-gap:6px}.top .crumb{order:9;flex-basis:100%}.top .clock,.top .rolebox{margin-left:auto}.top .clock+.rolebox{margin-left:0}}
+@media (max-width:680px){.top .clock+.rolebox{margin-left:auto}}
 .toasts{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;gap:8px;max-width:min(380px,calc(100vw - 32px))}
 .toast{background:var(--ink);color:var(--surface);padding:11px 15px;border-radius:11px;font-size:13.5px;box-shadow:var(--shadow-lg);animation:tin .25s}
 .toast.bad{background:var(--bad);color:#fff} .toast.good{background:var(--good);color:#fff}
@@ -373,9 +388,11 @@ table.t tbody tr.sel:hover td{background:var(--accent-soft)}
   <div class="main">
     <header class="top">
       <button class="iconbtn only-m" id="nav-open" type="button" aria-label="Mở menu"><svg class="i" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-      <div class="crumb"><b id="t-title"></b><span id="t-code"></span></div>
+      <button class="x" id="t-back" type="button" aria-label="Quay lại" title="Quay lại màn hình trước" hidden><svg class="i" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <nav class="crumb" aria-label="Breadcrumb"><ol class="bc" id="t-bc"></ol><b id="t-title"></b></nav>
       <div class="clock"><span class="dotlive" id="t-feed" title="Nguồn giá Reuters/Bloomberg"></span><span id="t-clock"></span></div>
       <label class="rolebox"><span class="av sm" id="t-av"></span><select id="t-role" aria-label="Đổi vai trò"></select></label>
+      <button class="x" id="t-close" type="button" aria-label="Đóng màn hình, về Trang chủ" title="Đóng · về Trang chủ" hidden>×</button>
     </header>
     <main class="content" id="content">
       <section class="view" id="v-dash" hidden></section>
@@ -405,7 +422,7 @@ table.t tbody tr.sel:hover td{background:var(--accent-soft)}
 "use strict";
 /* ============ utilities ============ */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const nf=(n,d=0)=>(isFinite(n)?Number(n):0).toLocaleString('vi-VN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const nf=(n,d=0)=>(isFinite(n)?Number(n):0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const rnd=n=>Math.floor(Math.random()*n);
@@ -423,10 +440,25 @@ const D={
   iso(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())},
   p(s){const [y,m,dd]=s.split('-').map(Number);return new Date(y,m-1,dd)}
 };
+/* ô nhập số: hiển thị phân cách hàng nghìn (3,000,000); .value vẫn trả chuỗi số thô cho phần tính toán */
+const VAL=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+const grp=s=>{s=String(s).replace(/,/g,'');const m=s.match(/^(-?)(\d*)(\.\d*)?$/);return m?m[1]+m[2].replace(/\B(?=(\d{3})+(?!\d))/g,',')+(m[3]||''):s};
+Object.defineProperty(HTMLInputElement.prototype,'value',{configurable:true,
+  get(){const v=VAL.get.call(this);return 'num' in this.dataset?v.replace(/,/g,''):v},
+  set(v){VAL.set.call(this,'num' in this.dataset?grp(v):v)}});
+const numInputs=r=>(r.matches?.('input[type=number]')?[r]:[...(r.querySelectorAll?.('input[type=number]')||[])]).forEach(i=>{const v=i.value;i.type='text';i.inputMode='decimal';i.dataset.num='';i.value=v});
+new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(numInputs))).observe(document.body,{childList:true,subtree:true});
+document.addEventListener('input',e=>{const i=e.target;if(!(i instanceof HTMLInputElement)||!('num' in i.dataset))return;
+  const raw=VAL.get.call(i),keep=raw.slice(0,i.selectionStart).replace(/[^\d.-]/g,'').length,f=grp(raw.replace(/[^\d.-]/g,''));
+  VAL.set.call(i,f);let p=0;for(let k=0;p<f.length&&k<keep;p++)if(f[p]!==',')k++;i.setSelectionRange(p,p)},true);
+document.addEventListener('keydown',e=>{const i=e.target;if(!(i instanceof HTMLInputElement)||!('num' in i.dataset)||i.readOnly||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;
+  e.preventDefault();const st=parseFloat(i.step)||1,dec=s=>(String(s).split('.')[1]||'').length,dp=Math.max(dec(st),dec(i.value));
+  const lo=parseFloat(i.min),hi=parseFloat(i.max);let v=(+i.value||0)+(e.key==='ArrowUp'?st:-st);if(!isNaN(lo))v=Math.max(lo,v);if(!isNaN(hi))v=Math.min(hi,v);
+  i.value=v.toFixed(dp);i.dispatchEvent(new Event('input',{bubbles:true}));i.dispatchEvent(new Event('change',{bubbles:true}))});
 const BD=new Date(2026,9,22);
 const JUL=(()=>{const s=new Date(2026,0,1);return String(D.days(s,BD)+1).padStart(3,'0')})();
-const T0=Date.now(), START=10*3600+15*60;
-function now(){const s=Math.floor((Date.now()-T0)/1000)+START;const h=Math.floor(s/3600)%24,m=Math.floor(s/60)%60,ss=s%60;return{str:`${p2(h)}:${p2(m)}:${p2(ss)}`,mins:h*60+m,sec:s}}
+const TZ=7*3600; /* giờ Việt Nam UTC+7, không phụ thuộc múi giờ của máy */
+function now(){const s=Math.floor(Date.now()/1000+TZ)%86400;const h=Math.floor(s/3600)%24,m=Math.floor(s/60)%60,ss=s%60;return{str:`${p2(h)}:${p2(m)}:${p2(ss)}`,mins:h*60+m,sec:s}}
 
 /* ============ reference data ============ */
 const ROLES={
@@ -556,7 +588,7 @@ function sigOf(d,k){const done=d.wf?Object.values(d.wf.done):[],pk=h=>`${h.uid} 
   const h=S.his.find(y=>y.ref===d.id&&y.act===(k==='risk'?'Risk Review: Đồng ý':'Duyệt ngoại lệ'));return h?pk({uid:h.user,t:h.t}):'<span class="muted">Không yêu cầu</span>'}
 
 /* ============ state ============ */
-const S={role:'maker',view:'dash',deals:[],his:[],seq:{FX:0,MM:0,GT:0},simT24Fail:false,feedOnline:true,bcLeft:60,board:null,sel:null,filter:'mine',
+const S={role:'maker',view:'dash',trail:[],deals:[],his:[],seq:{FX:0,MM:0,GT:0},simT24Fail:false,feedOnline:true,bcLeft:60,board:null,sel:null,filter:'mine',
   sales:{reqs:[],seq:0,ttl:60,takerLimit:2,band:10,quoted:0,hit:0},inau:[],inauSeq:0,built:{},
   lots:[
     {ref:'MM2508150012',isin:'TD2434567',date:'15/08/2025',orig:500000,soldBase:120000,book:'Trading',cost:98450},
@@ -737,6 +769,8 @@ async function reverseT24(d){
 
 /* action rules */
 const ACTS=['Submit','Hold','Cancel','Print','Delete','Approve','Reject','Reverse'];
+function roleCan(a){const chk=hasPerm('deal.approve')||hasPerm('risk.review')||signLvl()>0;
+  return a==='Approve'?hasPerm('deal.approve'):a==='Reject'?chk:a==='Print'?hasPerm('deal.submit')||chk:hasPerm('deal.submit')}
 function can(d,a){
   const r=S.role,s=d.status;
   const no=(w)=>[false,w];
@@ -804,13 +838,14 @@ async function doExtra(d,a){
 function extraBtns(d){
   const s=d.status,L=signLvl(),b=[];
   const btn=(k,l,en,why,cls='')=>`<button class="btn sm ${cls}" data-x="${k}" ${en?'':'disabled'} title="${esc(en?'':why)}">${l}</button>`;
-  if(s==='HOLD'&&!d.holdManual)b.push(btn('override','Override Request',hasPerm('deal.submit'),'Chỉ người nhập deal','pri'));
-  if(s==='RISK_REVIEW'){b.push(btn('riskOk','Risk Review: Đồng ý',hasPerm('risk.review')&&!d.riskOpinion&&d.dealer!==R().uid,d.riskOpinion?'Đã có ý kiến Risk Review':d.dealer===R().uid?'Không duyệt deal do chính mình tạo':'Chỉ QTRR (Middle Office)',hasPerm('risk.review')?'pri':''));
-    {const own=d.dealer===R().uid||(d.riskOpinion&&d.riskOpinion.by===R().uid);b.push(btn('sign',`Ký duyệt ngoại lệ (cấp ${d.reqLevel})`,!!d.riskOpinion&&L>=d.reqLevel&&!own,!d.riskOpinion?'Chờ ý kiến Risk Review':own?'Người tạo deal hoặc người đã Risk Review không được ký':`Cần ${LEVELS[d.reqLevel]}`,L>=d.reqLevel&&!own?'pri':''))}}
-  if(s==='CHECKER_REVIEW'){const w=wfOf(d),pi=pendingReview(d);if(pi>=0){const r=w.reviews[pi],why=reviewWhy(r,d),ok=!why;b.push(btn('rev',`${r.name} (bước ${pi+1}/${w.reviews.length})`,ok,why,ok?'pri':''))}}
+  if(s==='HOLD'&&!d.holdManual&&hasPerm('deal.submit'))b.push(btn('override','Override Request',true,'','pri'));
+  if(s==='RISK_REVIEW'){if(hasPerm('risk.review'))b.push(btn('riskOk','Risk Review: Đồng ý',!d.riskOpinion&&d.dealer!==R().uid,d.riskOpinion?'Đã có ý kiến Risk Review':'Không duyệt deal do chính mình tạo','pri'));
+    if(L>=d.reqLevel){const own=d.dealer===R().uid||(d.riskOpinion&&d.riskOpinion.by===R().uid);b.push(btn('sign',`Ký duyệt ngoại lệ (cấp ${d.reqLevel})`,!!d.riskOpinion&&!own,!d.riskOpinion?'Chờ ý kiến Risk Review':'Người tạo deal hoặc người đã Risk Review không được ký',d.riskOpinion&&!own?'pri':''))}}
+  if(s==='CHECKER_REVIEW'){const w=wfOf(d),pi=pendingReview(d);if(pi>=0){const r=w.reviews[pi],need=r.actor==='alco'?4:r.actor==='head'?3:Math.max(d.level,1);
+    if(r.actor==='risk'?hasPerm('risk.review'):L>=need){const why=reviewWhy(r,d),ok=!why;b.push(btn('rev',`${r.name} (bước ${pi+1}/${w.reviews.length})`,ok,why,ok?'pri':''))}}}
 
-  if(s==='APPROVED'&&!wfOf(d).autoT24)b.push(btn('push','Đẩy T24',hasPerm('deal.approve'),'Chỉ Back Office','pri'));
-  if(s==='SYNC_FAILED')b.push(btn('resync','Re-sync T24',hasPerm('deal.approve'),'Chỉ Back Office','pri'));
+  if(s==='APPROVED'&&!wfOf(d).autoT24&&hasPerm('deal.approve'))b.push(btn('push','Đẩy T24',true,'','pri'));
+  if(s==='SYNC_FAILED'&&hasPerm('deal.approve'))b.push(btn('resync','Re-sync T24',true,'','pri'));
   return b.join('');
 }
 
@@ -856,7 +891,7 @@ Object.assign(ICP,{cat:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c
   admin:'<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><polyline points="3 3 3 8 8 8"/><polyline points="12 7 12 12 15 14"/>'});
 const ic=k=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${ICP[k]||''}</svg>`;
 const ini=r=>r.uid.startsWith('cn')?'CN':(w=>(w[0][0]+w[w.length-1][0]).toUpperCase())(r.name.split(' '));
-function userUI(){const r=R(),i=ini(r);$('#u-av').textContent=i;$('#t-av').textContent=i;$('#u-name').textContent=r.name;$('#u-role').textContent=`${r.lane} · ${r.office}`}
+function userUI(){const r=R(),i=ini(r);$('#u-av').textContent=i;$('#t-av').textContent=i;$('#u-name').textContent=r.name;$('#u-role').textContent=`${r.lane} · ${r.office}`;document.body.dataset.perms=Object.keys(PERM).filter(hasPerm).join(' ')}
 function renderLoginUsers(){$('#lg-users').innerHTML=Object.entries(ROLES).map(([k,r])=>{const lk=locked(r.uid);return`<label class="uopt" ${lk?'style="opacity:.5;cursor:not-allowed"':''}><input type="radio" name="lguser" value="${k}" ${k===S.role&&!lk?'checked':''} ${lk?'disabled':''}><span class="av">${ini(r)}</span><div><b>${r.name}</b><span class="t">${r.uid} · ${r.lane}</span><span class="t">${lk?'Tài khoản đang bị khóa':r.office}</span></div></label>`}).join('')}
 function openNav(){$('#side').classList.add('open');$('#scrim').hidden=false}
 function closeNav(){const sd=$('#side');if(sd)sd.classList.remove('open');const sc=$('#scrim');if(sc)sc.hidden=true}
@@ -866,23 +901,35 @@ function buildNav(){
   $('#nav').innerHTML=Object.entries(g).map(([k,items])=>{const vis=items.filter(n=>allowed(n.id));if(!vis.length)return'';return`<div class="navgrp"><div>${k}</div>${vis.map(n=>`<button class="navbtn" data-v="${n.id}" ${S.view===n.id?'aria-current="page"':''}>${ic(n.id)}<span class="lbl">${n.label}</span>${n.badge?'<span class="bdg" id="nav-badge" hidden></span>':''}${n.badge2?'<span class="bdg" id="nav-badge2" hidden></span>':''}</button>`).join('')}</div>`}).join('');
   $$('#nav .navbtn').forEach(b=>b.onclick=()=>show(b.dataset.v));
 }
-function show(v){
+const home=()=>S.role==='branch'?'sales':S.role==='sysadm'?'wf':'dash';
+/* how: (mặc định) mở màn mới, ghi lịch sử · 'pop' quay lại, không ghi · 'root' bắt đầu lại từ đầu */
+function show(v,how){
   closeNav();
-  if(!allowed(v))v=S.role==='branch'?'sales':S.role==='sysadm'?'wf':'dash';S.view=v;
+  if(!allowed(v))v=home();
+  const prev=S.view;
+  if(how==='root')S.trail=[];else if(!how&&prev!==v){S.trail.push(prev);if(S.trail.length>30)S.trail.shift()}
+  S.view=v;
   $$('.view').forEach(s=>s.hidden=s.id!=='v-'+v);
   $$('#nav .navbtn').forEach(b=>b.dataset.v===v?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
-  const n=NAV.find(x=>x.id===v);$('#t-code').textContent=n.grp;$('#t-title').textContent=n.label;
+  topBar();
   if(!S.built[v]){VIEWS[v].build($('#v-'+v));S.built[v]=1}
   VIEWS[v].update&&VIEWS[v].update();
-  try{history.replaceState(null,'','#'+v)}catch(e){}
+  try{if(!how&&prev!==v)history.pushState(null,'','#'+v);else history.replaceState(null,'','#'+v);S.hist=1}catch(e){S.hist=0}
   window.scrollTo(0,0);
 }
+function topBar(){const v=S.view,n=NAV.find(x=>x.id===v),atHome=v===home();
+  $('#t-title').textContent=n.label;
+  $('#t-bc').innerHTML=atHome?'<li>Trang chủ</li>':`<li><button type="button" data-home>Trang chủ</button></li><li>${esc(n.grp)}</li>`;
+  $('#t-back').hidden=atHome&&!S.trail.length;$('#t-close').hidden=atHome}
+function goBack(){if(S.trail.length&&S.hist)history.back();else show(S.trail.pop()||home(),'pop')}
+window.addEventListener('popstate',()=>{const h=(location.hash||'').slice(1);if(h===S.view||!NAV.some(n=>n.id===h))return;
+  if(S.trail[S.trail.length-1]===h)S.trail.pop();else S.trail.push(S.view);show(h,'pop')});
 function refresh(){const v=VIEWS[S.view];v&&v.update&&v.update();badge();if(S.dealOpen)renderDealModal()}
 function myTasks(role=S.role){
   return S.deals.filter(d=>{const h=nextHint(d);return h&&h.r===role&&!TERMINAL.has(d.status)});
 }
 function badge(){const n=myTasks().length;const b=$('#nav-badge');if(b){b.hidden=!n;b.textContent=n}const b2=$('#nav-badge2');if(b2){const n2=hasPerm('cfg.approve')?S.inau.filter(x=>x.by!==R().uid).length:0;b2.hidden=!n2;b2.textContent=n2}}
-function setRole(r,quiet){if(locked(ROLES[r].uid)){toast(`Tài khoản ${ROLES[r].uid} đang bị khóa.`,'bad');$('#t-role').value=S.role;return}S.role=r;$('#t-role').value=r;buildNav();userUI();if(!allowed(S.view))show(S.view);else{$$('#nav .navbtn').forEach(b=>b.dataset.v===S.view&&b.setAttribute('aria-current','page'));refresh()}if(!quiet)toast(`Đang thao tác với vai trò ${ROLES[r].lane}: ${ROLES[r].name}`)}
+function setRole(r,quiet){if(locked(ROLES[r].uid)){toast(`Tài khoản ${ROLES[r].uid} đang bị khóa.`,'bad');$('#t-role').value=S.role;return}S.role=r;$('#t-role').value=r;buildNav();userUI();S.trail=[];topBar();if(!allowed(S.view))show(S.view,'root');else{$$('#nav .navbtn').forEach(b=>b.dataset.v===S.view&&b.setAttribute('aria-current','page'));refresh()}if(!quiet)toast(`Đang thao tác với vai trò ${ROLES[r].lane}: ${ROLES[r].name}`)}
 document.addEventListener('click',e=>{
   const gv=e.target.closest('[data-gv]');if(gv){if(gv.dataset.gr!==S.role)setRole(gv.dataset.gr);if(gv.dataset.gf)S.filter=gv.dataset.gf;show(gv.dataset.gv);return}
   const o=e.target.closest('[data-open]');if(o){openDeal(o.dataset.open);return}
@@ -920,7 +967,7 @@ update(){
     ['P&L ròng TRADING01',(RISK.pnl>=0?'+':'')+nf(RISK.pnl,2)+' tỷ',`Lỗ ngày ${nf(RISK.loss.day,2)} / Stop-loss ${nf(tr.slDay,1)} tỷ`],
     ['Hạn mức đối tác cao nhất',nf(Math.max(worst.u,worst.pu),0)+'%',`${worst.c.name} · ${worst.u>=worst.pu?'DSL':'PSL'}`]
   ].map(([k,v,s],i)=>`<div class="kpi"><div class="k">${k}</div><div class="v ${i===2&&RISK.pnl<0?'dn':''}">${v}</div><div class="s">${s}</div></div>`).join('');
-  $('#d-role').textContent=`${R().lane} · ${R().name}`;
+  $('#d-role').textContent=`${R().lane} · ${R().name}`;$$('[data-go]').forEach(b=>b.hidden=!allowed(b.dataset.go));
   const t=myTasks();
   const ct=hasPerm('cfg.approve')?S.inau.filter(x=>x.by!==R().uid):[];
   $('#d-tasks').innerHTML=(t.length||ct.length)?ct.map(x=>`<div class="task"><div><div class="id">${x.id} <span class="pill warn">Chờ duyệt cấu hình</span></div><div>${esc(TBL[x.table])}: ${esc(x.label)}</div><div class="hint">Đề xuất bởi ${x.by} lúc ${x.t}</div></div><button class="btn sm" data-gv="admin" data-gr="${S.role}">Xem & duyệt</button></div>`).join('')+t.slice(0,7).map(d=>`<div class="task"><div><div class="id">${d.id} · ${pill(d.status)}</div><div>${esc(d.desc)}</div><div class="hint">${esc(nextHint(d).t)}</div></div><button class="btn sm" data-open="${d.id}">Xử lý</button></div>`).join(''):`<div class="empty">Không có việc nào chờ vai trò ${esc(R().lane)}. Thử đổi sang vai trò khác ở thanh trên.</div>`;
@@ -968,6 +1015,7 @@ function renderDealModal(){
   if(!S.dealOpen||!d){root.innerHTML='';S.dealOpen=false;return}
   const old=$('.mb',root),sc=old?old.scrollTop:0;
   const h=nextHint(d),his=S.his.filter(x=>x.ref===d.id),ex=extraBtns(d),bo=hasPerm('deal.approve');
+  const acts=ACTS.filter(roleCan).map(a=>{const[ok,why]=can(d,a);const lbl=a==='Approve'&&d.status==='REVERSAL_PENDING'?'Approve Reverse':a;return`<button class="btn sm ${a==='Approve'||a==='Submit'?'pri':''} ${a==='Reject'||a==='Delete'?'danger':''}" data-a="${a}" ${ok?'':'disabled'} title="${esc(ok?'':why)}">${lbl}</button>`}).join('');
   const conf=d.status==='CHECKER_REVIEW'?`<div class="res"><h3>Back Office đối chiếu trước khi Approve</h3><div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">
     <label class="chk"><input type="checkbox" data-c="swift" ${d.conf.swift?'checked':''} ${bo?'':'disabled'}> Confirmation ${MT(d)} / fax-email song phương khớp</label>
     <label class="chk"><input type="checkbox" data-c="bal" ${d.conf.bal?'checked':''} ${bo?'':'disabled'}> Số dư ${d.module==='FX'&&d.quote!=='VND'?'Nostro':'tại NHNN / Nostro'} đủ thanh toán</label>
@@ -983,8 +1031,7 @@ function renderDealModal(){
    <div class="mb">
     ${h?`<div class="note">${esc(h.t)} ${h.r!==S.role?`<button class="btn sm" data-role="${h.r}">Chuyển sang ${esc(ROLES[h.r].lane)}</button>`:''}</div>`:''}
     ${d.holdReason&&['HOLD','OVERRIDE_REQUEST','RISK_REVIEW'].includes(d.status)?`<div class="note warn"><b>Lý do Hold:</b> ${esc(d.holdReason)}<br>Cấp Override Approval yêu cầu: ${esc(LEVELS[d.reqLevel])}${d.riskOpinion?`<br><b>Risk Review (${d.riskOpinion.by}):</b> ${esc(d.riskOpinion.note)}`:''}</div>`:''}
-    <div class="dact"><div class="btns">${ACTS.map(a=>{const[ok,why]=can(d,a);const lbl=a==='Approve'&&d.status==='REVERSAL_PENDING'?'Approve Reverse':a;return`<button class="btn sm ${a==='Approve'||a==='Submit'?'pri':''} ${a==='Reject'||a==='Delete'?'danger':''}" data-a="${a}" ${ok?'':'disabled'} title="${esc(ok?'':why)}">${lbl}</button>`}).join('')}</div>${ex?`<div class="btns">${ex}</div>`:''}</div>
-    <div class="tabs" role="tablist">${DTABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-t="${k}" aria-selected="${S.dtab===k}">${l}${k==='his'?` (${his.length})`:''}</button>`).join('')}</div>
+    ${acts||ex?`<div class="dact">${acts?`<div class="btns">${acts}</div>`:''}${ex?`<div class="btns">${ex}</div>`:''}</div>`:''}    <div class="tabs" role="tablist">${DTABS.map(([k,l])=>`<button class="tab" role="tab" type="button" data-t="${k}" aria-selected="${S.dtab===k}">${l}${k==='his'?` (${his.length})`:''}</button>`).join('')}</div>
     <div class="tabp">${tabs[S.dtab]}</div>
    </div></div></div>`;
   $('.mb',root).scrollTop=sc;
@@ -1004,7 +1051,7 @@ function boardCalc(){const ub=bid('USD/VND'),ua=ask('USD/VND'),um=PAIRS['USD/VND
   {p:'GBP/VND',b:bid('GBP/USD')*ub,a:ask('GBP/USD')*ua,dp:0,f:'GBP/USD × USD/VNDᵢ'},
   {p:'AUD/VND',b:bid('AUD/USD')*ub,a:ask('AUD/USD')*ua,dp:0,f:'AUD/USD × USD/VNDᵢ'},
   {p:'JPY/VND',b:ub/ask('USD/JPY'),a:ua/bid('USD/JPY'),dp:2,f:'USD/VNDᵢ ÷ USD/JPY'},
-  {p:'XAU/VNDc',b:bid('XAU/USD')*um*.12055,a:ask('XAU/USD')*um*.12055,dp:0,f:'XAU/USD × USD/VNDᵢ × 0,12055'}]}
+  {p:'XAU/VNDc',b:bid('XAU/USD')*um*.12055,a:ask('XAU/USD')*um*.12055,dp:0,f:'XAU/USD × USD/VNDᵢ × 0.12055'}]}
 function broadcast(){S.board={rows:boardCalc(),at:now().str};S.bcLeft=CFG.par.bcCycle}
 VIEWS.rates={build(el){el.innerHTML=`
   <div class="vhead"><div><h1>Bảng tỷ giá trực tuyến</h1><p>Nguồn Reuters/Bloomberg cập nhật liên tục. Bảng niêm yết cho chi nhánh được phát sóng mỗi 60 giây, kèm tỷ giá chéo và giá vàng quy đổi.</p></div>
@@ -1027,12 +1074,12 @@ update(){
   $('#r-hint').textContent=S.feedOnline?'Giá nhảy theo thời gian thực. Màu xanh/đỏ thể hiện chiều biến động so với giá mở cửa.':'Nguồn giá gián đoạn: nhập Bid/Ask trực tiếp, hệ thống ghi nhận nguồn "Nhập tay".';
   $('#r-mkt').innerHTML=`<thead><tr><th>Cặp tiền</th><th class="r">Bid</th><th class="r">Ask</th><th class="r">Mid</th><th class="r">So mở cửa</th></tr></thead><tbody>${Object.keys(PAIRS).map(k=>{const p=PAIRS[k],ch=p.mid-p.open;const cell=(v,f)=>S.feedOnline?`<td class="r num" id="r-${key(k)}-${f}">${nf(v,p.dp)}</td>`:`<td class="r"><input class="inp num" style="width:110px" data-mo="${k}" data-f="${f}" value="${v.toFixed(p.dp)}" aria-label="${k} ${f}"></td>`;
     return`<tr><td><b>${k}</b></td>${cell(bid(k),'b')}${cell(ask(k),'a')}<td class="r num" id="r-${key(k)}-m">${nf(p.mid,p.dp)}</td><td class="r num ${ch>=0?'up':'dn'}" id="r-${key(k)}-c">${ch>=0?'▲':'▼'} ${nf(Math.abs(ch),p.dp)}</td></tr>`}).join('')}</tbody>`;
-  $$('[data-mo]').forEach(i=>i.onchange=()=>{const k=i.dataset.mo,p=PAIRS[k];const b=+$(`[data-mo="${k}"][data-f="b"]`).value,a=+$(`[data-mo="${k}"][data-f="a"]`).value;if(a>b){p.mid=(a+b)/2;p.spr=a-b;p.anchor=p.mid;log({ref:'Tỷ giá '+k,act:'Manual Override',note:`Bid ${b} / Ask ${a}`});toast(`Đã ghi đè ${k}`)}else toast('Ask phải lớn hơn Bid.','bad')});
+  $$('[data-mo]').forEach(i=>i.onchange=()=>{const k=i.dataset.mo,p=PAIRS[k];const b=+$(`[data-mo="${k}"][data-f="b"]`).value,a=+$(`[data-mo="${k}"][data-f="a"]`).value;if(a>b){p.mid=(a+b)/2;p.spr=a-b;p.anchor=p.mid;log({ref:'Tỷ giá '+k,act:'Manual Override',note:`Bid ${nf(b,p.dp)} / Ask ${nf(a,p.dp)}`});toast(`Đã ghi đè ${k}`)}else toast('Ask phải lớn hơn Bid.','bad')});
   this.board();
   const S0=PAIRS['USD/VND'].mid,sp=D.addW(BD,2);
   $('#r-fwd').innerHTML=`<thead><tr><th>Kỳ hạn</th><th>Ngày giá trị</th><th class="r">t (ngày)</th><th class="r">F (mid)</th><th class="r">Swap points</th></tr></thead><tbody>${Object.keys(FX_TEN).map(t=>{const vd=tenorDate(sp,t),n=D.days(sp,vd),F=fwd(S0,'USD','VND',n);return`<tr><td><b>${t}</b></td><td class="num">${D.f(vd)}</td><td class="r num">${n}</td><td class="r num">${nf(F,1)}</td><td class="r num">+${nf(F-S0,1)}</td></tr>`}).join('')}</tbody>`;
 },
-board(){if(!$('#r-board'))return;const b=S.board;$('#r-board').innerHTML=`<thead><tr><th>Cặp tiền</th><th class="r">Mua</th><th class="r">Bán</th><th>Công thức</th></tr></thead><tbody>${b.rows.map(r=>`<tr><td><b>${r.p}</b></td><td class="r num">${nf(r.b,r.dp)}</td><td class="r num">${nf(r.a,r.dp)}</td><td class="hint">${r.f}</td></tr>`).join('')}</tbody>`;$('#r-at').textContent=`Broadcast lần cuối lúc ${b.at}. Hệ số T = 0,12055 cho giá vàng quy đổi.`},
+board(){if(!$('#r-board'))return;const b=S.board;$('#r-board').innerHTML=`<thead><tr><th>Cặp tiền</th><th class="r">Mua</th><th class="r">Bán</th><th>Công thức</th></tr></thead><tbody>${b.rows.map(r=>`<tr><td><b>${r.p}</b></td><td class="r num">${nf(r.b,r.dp)}</td><td class="r num">${nf(r.a,r.dp)}</td><td class="hint">${r.f}</td></tr>`).join('')}</tbody>`;$('#r-at').textContent=`Broadcast lần cuối lúc ${b.at}. Hệ số T = 0.12055 cho giá vàng quy đổi.`},
 tick(){if(!$('#r-mkt'))return;$('#r-cd').textContent=`Broadcast sau ${S.bcLeft}s`;if(!S.feedOnline)return;for(const k in PAIRS){const p=PAIRS[k];const set=(f,v)=>{const c=$(`#r-${key(k)}-${f}`);if(!c)return;const old=c.textContent,nv=nf(v,p.dp);if(old!==nv){c.textContent=nv;c.classList.remove('flash-up','flash-dn');void c.offsetWidth;c.classList.add(p.mid>=p.prev?'flash-up':'flash-dn')}};set('b',bid(k));set('a',ask(k));set('m',p.mid);const ch=p.mid-p.open,c=$(`#r-${key(k)}-c`);if(c){c.className='r num '+(ch>=0?'up':'dn');c.textContent=`${ch>=0?'▲':'▼'} ${nf(Math.abs(ch),p.dp)}`}}}
 };
 function feedDot(){$('#t-feed').classList.toggle('off',!S.feedOnline)}
@@ -1054,7 +1101,7 @@ VIEWS.fx={build(el){el.innerHTML=`
    <div class="field full"><div class="btns"><button class="btn sm" id="f-mkt" type="button">Lấy lại giá thị trường</button><span class="hint" id="f-rule"></span></div></div>
    <label class="field full"><span>Ghi chú</span><input id="f-note" value="Giao dịch cân đối trạng thái cuối phiên sáng"></label>
   </div>
-  <div class="btns"><button class="btn" id="f-draft" type="button">Lưu nháp</button><button class="btn pri" id="f-submit" type="button">Kiểm tra & Submit</button><button class="btn sm" id="f-big" type="button" title="Điền khối lượng lớn để thấy deal bị HOLD">Thử deal vượt hạn mức</button></div></div>
+  <div class="btns"><span class="hint" data-noperm="deal.submit">Vai trò hiện tại chỉ xem định giá. Nhập deal do Maker (Front Office) thực hiện.</span><button class="btn" id="f-draft" type="button" data-perm="deal.submit">Lưu nháp</button><button class="btn pri" id="f-submit" type="button" data-perm="deal.submit">Kiểm tra & Submit</button><button class="btn sm" id="f-big" type="button" data-perm="deal.submit" title="Điền khối lượng lớn để thấy deal bị HOLD">Thử deal vượt hạn mức</button></div></div>
   <div class="card"><div class="card-h"><h2>Kết quả định giá</h2><span class="hint">Submit sẽ chạy Pre-deal check 4 bước</span></div><div id="f-price"></div></div></div>`;
   $$('#f-prod button').forEach(b=>b.onclick=()=>{FXF.product=b.dataset.p;$$('#f-prod button').forEach(x=>x.setAttribute('aria-pressed',x===b));FXF.touched=false;fxCalc()});
   ['f-pair','f-ccy','f-dir','f-cyc','f-ten','f-cp','f-amt'].forEach(i=>$('#'+i).addEventListener('input',()=>{if(i!=='f-amt'&&i!=='f-cp')FXF.touched=false;fxCalc()}));
@@ -1089,25 +1136,33 @@ VIEWS.sales={build(el){el.innerHTML=`
   <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr));min-width:min(100%,420px)" id="s-kpi"></div></div>
   <div class="g2"><div class="card"><div class="card-h"><h2>Chi nhánh Quận 1</h2><span class="side-tag">Taker</span></div>
     <div class="tscroll"><table class="t" id="s-board"></table></div>
-    <div class="fields">
+    <div class="fields" data-perm="sales.ask">
       <label class="field"><span>Cặp tiền</span><select id="s-pair"><option>USD/VND</option><option>EUR/VND</option></select></label>
       <label class="field"><span>Chiều chi nhánh với khách hàng</span><select id="s-dir"><option value="B">CN mua ngoại tệ của KH</option><option value="S">CN bán ngoại tệ cho KH</option></select></label>
       <label class="field"><span>Số lượng</span><input id="s-amt" class="num" type="number" value="250000" step="10000"></label>
-      <label class="field"><span>Tỷ giá khách hàng</span><input id="s-kh" class="num" type="number" step="any"></label>
+      <label class="field"><span>Tỷ giá khách hàng</span><input id="s-kh" class="num" type="number" step="any"><span class="hint" id="s-khc" aria-live="polite"></span></label>
       <label class="field"><span>Cross-sell KH (đ / đơn vị)</span><input id="s-cskh" class="num" type="number" value="0" step="1"></label>
       <label class="field"><span>Hiệu lực giá chào</span><select id="s-ttl">${[30,45,60,90].map(v=>`<option value="${v}" ${v===CFG.par.ttl?'selected':''}>${v} giây</option>`).join('')}</select></label>
     </div>
-    <div class="btns"><button class="btn pri" id="s-send" type="button">Gửi yêu cầu giá</button><span class="hint">Hạn mức Taker ${nf(CFG.par.takerLimit)} triệu USD/deal · giờ giao dịch ${hm(CFG.par.open)}–${hm(CFG.par.close)}</span></div>
+    <div class="btns"><span class="hint" data-noperm="sales.ask">Chỉ vai trò Chi nhánh (Taker) gửi yêu cầu giá.</span><button class="btn pri" id="s-send" type="button" data-perm="sales.ask">Gửi yêu cầu giá</button><span class="hint">Hạn mức Taker ${nf(CFG.par.takerLimit)} triệu USD/deal · giờ giao dịch ${hm(CFG.par.open)}–${hm(CFG.par.close)}</span></div>
     <h3>Yêu cầu của chi nhánh</h3><div id="s-branch" style="display:flex;flex-direction:column;gap:8px"></div></div>
   <div class="card"><div class="card-h"><h2>Hội sở · Dealer FX Sales</h2><span class="side-tag">Maker</span></div>
     <div id="s-queue" style="display:flex;flex-direction:column;gap:8px"></div>
     <div class="formula">P/L CN = [(Tỷ giá HO + Cross-sell HO) − (Tỷ giá KH + Cross-sell KH)] × Số lượng × P &nbsp;·&nbsp; P = +1 khi CN mua, −1 khi CN bán</div>
     <div class="formula">Điều chỉnh vượt biên độ ${CFG.par.amendBand}%: Tỷ giá cuối = (SL₁ × G₁ + SL₂ × G₂) ÷ (SL₁ + SL₂)</div></div></div>`;
-  ['s-pair','s-dir'].forEach(i=>$('#'+i).oninput=()=>salesKH());
+  ['s-pair','s-dir'].forEach(i=>$('#'+i).oninput=()=>salesKH());$('#s-kh').addEventListener('input',salesKhc);
   $('#s-send').onclick=salesSend;salesKH();},
-update(){salesBoard();salesBranch();salesQueue();salesKpi()}};
+update(){salesBoard();salesKhc();salesBranch();salesQueue();salesKpi()}};
 function boardRate(pair,dir){const r=S.board.rows.find(x=>x.p===pair);return dir==='B'?r.b:r.a}
-function salesKH(){const pair=$('#s-pair').value,dir=$('#s-dir').value;const br=boardRate(pair,dir);$('#s-kh').value=Math.round(dir==='B'?br-15:br+15)}
+function salesKH(){const pair=$('#s-pair').value,dir=$('#s-dir').value;const br=boardRate(pair,dir);$('#s-kh').value=Math.round(dir==='B'?br-15:br+15);salesKhc()}
+/* tỷ giá KH so với bảng niêm yết: CN mua thì không cao hơn giá Mua, CN bán thì không thấp hơn giá Bán; lệch về phía có lợi cho CN tối đa biên độ off-market */
+function khCheck(pair,dir,kh){const br=Math.round(boardRate(pair,dir)),band=Math.round(br*CFG.par.fxBand/100),buy=dir==='B';
+  const lo=buy?br-band:br,hi=buy?br:br+band,side=buy?'giá Mua':'giá Bán',rng=`khoảng cho phép ${nf(lo)} – ${nf(hi)} (${side} niêm yết ${nf(br)}, biên độ ${nf(CFG.par.fxBand,2)}%)`;
+  if(!kh)return{ok:false,msg:'Nhập tỷ giá khách hàng.'};
+  if(kh>hi)return{ok:false,msg:buy?`Cao hơn giá Mua niêm yết ${nf(br)}: chi nhánh mua của KH đắt hơn bảng giá (+${nf(kh-br)}).`:`Cao hơn giá Bán niêm yết quá biên độ: tối đa ${nf(hi)} (+${nf(kh-hi)}).`};
+  if(kh<lo)return{ok:false,msg:buy?`Thấp hơn giá Mua niêm yết quá biên độ: tối thiểu ${nf(lo)} (−${nf(lo-kh)}).`:`Thấp hơn giá Bán niêm yết ${nf(br)}: chi nhánh bán cho KH rẻ hơn bảng giá (−${nf(br-kh)}).`};
+  return{ok:true,msg:'Trong '+rng+'.'}}
+function salesKhc(){const el=$('#s-khc');if(!el)return;const c=khCheck($('#s-pair').value,$('#s-dir').value,+$('#s-kh').value);el.textContent=c.msg;el.style.color=c.ok?'var(--good)':'var(--bad)'}
 function salesBoard(){$('#s-board').innerHTML=`<thead><tr><th>Bảng niêm yết (${S.board.at})</th><th class="r">Mua</th><th class="r">Bán</th></tr></thead><tbody>${S.board.rows.slice(0,2).map(r=>`<tr><td><b>${r.p}</b></td><td class="r num">${nf(r.b)}</td><td class="r num">${nf(r.a)}</td></tr>`).join('')}</tbody>`}
 function salesKpi(){const s=S.sales;const hr=s.quoted?s.hit/s.quoted*100:0;$('#s-kpi').innerHTML=[['Đã chào giá',nf(s.quoted)],['Chốt thành công',nf(s.hit)],['Hit ratio',s.quoted?nf(hr,0)+'%':'—']].map(([k,v])=>`<div class="kpi"><div class="k">${k}</div><div class="v" style="font-size:20px">${v}</div></div>`).join('')}
 function usdOf(pair,amt){return pair==='USD/VND'?amt/1e6:amt*PAIRS['EUR/USD'].mid/1e6}
@@ -1115,6 +1170,7 @@ function salesSend(){
   const pair=$('#s-pair').value,dir=$('#s-dir').value,amt=+$('#s-amt').value||0,kh=+$('#s-kh').value,cs=+$('#s-cskh').value||0;const u=usdOf(pair,amt),t=now();
   const id='RQ-'+String(++S.sales.seq).padStart(3,'0');
   if(t.mins<CFG.par.open||t.mins>CFG.par.close){toast(`Ngoài giờ giao dịch ${hm(CFG.par.open)}–${hm(CFG.par.close)}.`,'bad');return}
+  {const c=khCheck(pair,dir,kh);if(!c.ok){toast(c.msg+' Yêu cầu không được gửi.','bad');log({ref:id,act:'Kiểm tra tỷ giá KH',to:'REJECTED',note:`${pair} ${dir==='B'?'CN mua':'CN bán'} · KH ${nf(kh)} · ${c.msg}`,user:'cn.q1'});return}}
   if(u>CFG.par.takerLimit){toast(`Vượt hạn mức Taker: ${nf(u,2)} > ${nf(CFG.par.takerLimit)} triệu USD. Yêu cầu bị từ chối.`,'bad');log({ref:id,act:'Kiểm tra hạn mức Taker',to:'REJECTED',note:`${nf(u,2)}M > ${CFG.par.takerLimit}M USD`,user:'cn.q1'});return}
   const ho=dir==='B'?(pair==='USD/VND'?bid('USD/VND'):bid('EUR/USD')*bid('USD/VND')):(pair==='USD/VND'?ask('USD/VND'):ask('EUR/USD')*ask('USD/VND'));
   S.sales.reqs.unshift({id,pair,dir,amt,kh,cs,usd:u,status:'QUEUED',hoSuggest:Math.round(ho),ttl:+$('#s-ttl').value,alert:true,amends:[]});
@@ -1128,8 +1184,8 @@ function salesBranch(){
   el.innerHTML=list.length?list.map(r=>{
     let body='';
     if(r.status==='QUEUED')body=`<div class="hint">Đang chờ Hội sở chào giá…</div>`;
-    if(r.status==='QUOTED'){const left=Math.max(0,Math.ceil((r.exp-Date.now())/1000));body=`<div class="rh"><span>Giá HO chào: <b class="num">${nf(r.ho)}</b> · CS HO ${nf(r.csHO)}</span><span class="cd" id="cd-${r.id}">${left}s</span></div><div class="cdbar"><i id="cdb-${r.id}" style="width:${left/r.ttl*100}%"></i></div><div class="btns"><button class="btn sm pri" data-sc="${r.id}">Chốt giá</button><button class="btn sm" data-sx="${r.id}">Từ chối</button></div>`}
-    if(r.status==='CONFIRMED'){const pl=plCN(r);body=`<dl class="kv"><dt>Số lượng gốc / tỷ giá gốc</dt><dd>${nf(r.amt)} @ ${nf(r.ho)}</dd>${r.amends.map((a,i)=>`<dt>Điều chỉnh ${i+1} ${a.auto?'(tự duyệt)':'(HO chào bổ sung)'}</dt><dd>${a.qty>=0?'+':''}${nf(a.qty)} @ ${nf(a.rate)}</dd>`).join('')}${r.amends.length?`<dt>Số lượng cuối / tỷ giá cuối</dt><dd>${nf(r.finalQty)} @ ${nf(r.finalRate,2)}</dd>`:''}<dt>P/L chi nhánh</dt><dd class="${pl>=0?'up':'dn'}">${pl>=0?'+':''}${nf(pl)} đ</dd><dt>Deal</dt><dd><button class="btn sm" data-open="${r.dealId}">${r.dealId}</button></dd></dl>${r.pendingAmend?`<div class="note warn">Điều chỉnh ${r.pendingAmend>0?'+':''}${nf(r.pendingAmend)} vượt biên độ ${CFG.par.amendBand}% · chờ Hội sở chào giá phần chênh lệch</div>`:`<div class="btns"><button class="btn sm" data-sa="${r.id}">Điều chỉnh khối lượng</button></div>`}`}
+    if(r.status==='QUOTED'){const left=Math.max(0,Math.ceil((r.exp-Date.now())/1000));body=`<div class="rh"><span>Giá HO chào: <b class="num">${nf(r.ho)}</b> · CS HO ${nf(r.csHO)}</span><span class="cd" id="cd-${r.id}">${left}s</span></div><div class="cdbar"><i id="cdb-${r.id}" style="width:${left/r.ttl*100}%"></i></div><div class="btns"><button class="btn sm pri" data-sc="${r.id}" data-perm="sales.ask">Chốt giá</button><button class="btn sm" data-sx="${r.id}" data-perm="sales.ask">Từ chối</button></div>`}
+    if(r.status==='CONFIRMED'){const pl=plCN(r);body=`<dl class="kv"><dt>Số lượng gốc / tỷ giá gốc</dt><dd>${nf(r.amt)} @ ${nf(r.ho)}</dd>${r.amends.map((a,i)=>`<dt>Điều chỉnh ${i+1} ${a.auto?'(tự duyệt)':'(HO chào bổ sung)'}</dt><dd>${a.qty>=0?'+':''}${nf(a.qty)} @ ${nf(a.rate)}</dd>`).join('')}${r.amends.length?`<dt>Số lượng cuối / tỷ giá cuối</dt><dd>${nf(r.finalQty)} @ ${nf(r.finalRate,2)}</dd>`:''}<dt>P/L chi nhánh</dt><dd class="${pl>=0?'up':'dn'}">${pl>=0?'+':''}${nf(pl)} đ</dd><dt>Deal</dt><dd><button class="btn sm" data-open="${r.dealId}">${r.dealId}</button></dd></dl>${r.pendingAmend?`<div class="note warn">Điều chỉnh ${r.pendingAmend>0?'+':''}${nf(r.pendingAmend)} vượt biên độ ${CFG.par.amendBand}% · chờ Hội sở chào giá phần chênh lệch</div>`:`<div class="btns"><button class="btn sm" data-sa="${r.id}" data-perm="sales.ask">Điều chỉnh khối lượng</button></div>`}`}
     if(r.status==='EXPIRED')body=`<div class="hint">Hết thời gian hiệu lực giá. Yêu cầu tự động hủy.</div>`;
     if(r.status==='REJECTED')body=`<div class="hint">Chi nhánh từ chối giá chào.</div>`;
     const stp={QUEUED:'info',QUOTED:'warn',CONFIRMED:'good',EXPIRED:'',REJECTED:'bad'}[r.status];
@@ -1143,10 +1199,10 @@ function salesQueue(){
   if(document.activeElement&&el.contains(document.activeElement)&&el.dataset.sig===q.map(r=>r.id+r.status+(r.pendingAmend||'')).join())return;
   el.dataset.sig=q.map(r=>r.id+r.status+(r.pendingAmend||'')).join();
   el.innerHTML=q.length?q.map(r=>r.status==='QUEUED'?`<div class="req ${r.alert?'alert':''}"><div class="rh"><b>${r.id} · ${r.pair} · ${r.dir==='B'?'CN bán lại cho HO':'CN mua từ HO'} ${nf(r.amt)}</b><span class="pill warn">Yêu cầu mới</span></div>
-    <div class="fields"><label class="field"><span>Tỷ giá chào HO</span><input class="num" type="number" id="q-r-${r.id}" value="${r.hoSuggest}"></label><label class="field"><span>Cross-sell HO</span><input class="num" type="number" id="q-c-${r.id}" value="5"></label></div>
-    <div class="btns"><button class="btn sm pri" data-q="${r.id}">Chào giá</button><span class="hint">Giá thị trường gợi ý ${nf(r.hoSuggest)} · hiệu lực ${r.ttl}s</span></div></div>`
-    :`<div class="req alert"><div class="rh"><b>${r.id} · Điều chỉnh ${r.pendingAmend>0?'+':''}${nf(r.pendingAmend)}</b><span class="pill warn">Vượt biên độ</span></div><label class="field"><span>Tỷ giá chào cho phần chênh lệch</span><input class="num" type="number" id="q-a-${r.id}" value="${Math.round(r.dir==='B'?bid('USD/VND'):ask('USD/VND'))}"></label><div class="btns"><button class="btn sm pri" data-qa="${r.id}">Chào giá bổ sung</button></div></div>`).join(''):'<div class="empty">Hàng đợi trống. Yêu cầu từ chi nhánh sẽ hiện ở đây kèm chuông báo.</div>';
-  $$('[data-q]',el).forEach(b=>b.onclick=()=>{const r=S.sales.reqs.find(x=>x.id===b.dataset.q);r.ho=+$('#q-r-'+r.id).value;r.csHO=+$('#q-c-'+r.id).value||0;r.status='QUOTED';r.alert=false;r.exp=Date.now()+r.ttl*1000;S.sales.quoted++;log({ref:r.id,act:'HO chào giá',from:'QUEUED',to:'QUOTED',note:`${nf(r.ho)} · CS HO ${r.csHO}`});refresh()});
+    <div class="fields" data-perm="deal.submit"><label class="field"><span>Tỷ giá chào HO</span><input class="num" type="number" id="q-r-${r.id}" value="${r.hoSuggest}"></label><label class="field"><span>Cross-sell HO</span><input class="num" type="number" id="q-c-${r.id}" value="5"></label></div>
+    <div class="btns"><button class="btn sm pri" data-q="${r.id}" data-perm="deal.submit">Chào giá</button><span class="hint">Giá thị trường gợi ý ${nf(r.hoSuggest)} · hiệu lực ${r.ttl}s</span><span class="hint" data-noperm="deal.submit">· chờ Dealer Hội sở chào giá</span></div></div>`
+    :`<div class="req alert"><div class="rh"><b>${r.id} · Điều chỉnh ${r.pendingAmend>0?'+':''}${nf(r.pendingAmend)}</b><span class="pill warn">Vượt biên độ</span></div><label class="field" data-perm="deal.submit"><span>Tỷ giá chào cho phần chênh lệch</span><input class="num" type="number" id="q-a-${r.id}" value="${Math.round(r.dir==='B'?bid('USD/VND'):ask('USD/VND'))}"></label><div class="btns"><button class="btn sm pri" data-qa="${r.id}" data-perm="deal.submit">Chào giá bổ sung</button><span class="hint" data-noperm="deal.submit">Chờ Dealer Hội sở chào giá phần chênh lệch</span></div></div>`).join(''):'<div class="empty">Hàng đợi trống. Yêu cầu từ chi nhánh sẽ hiện ở đây kèm chuông báo.</div>';
+  $$('[data-q]',el).forEach(b=>b.onclick=()=>{const r=S.sales.reqs.find(x=>x.id===b.dataset.q);r.ho=+$('#q-r-'+r.id).value;r.csHO=+$('#q-c-'+r.id).value||0;r.status='QUOTED';r.alert=false;r.exp=Date.now()+r.ttl*1000;S.sales.quoted++;log({ref:r.id,act:'HO chào giá',from:'QUEUED',to:'QUOTED',note:`${nf(r.ho)} · CS HO ${nf(r.csHO)}`});refresh()});
   $$('[data-qa]',el).forEach(b=>b.onclick=()=>{const r=S.sales.reqs.find(x=>x.id===b.dataset.qa);const g2=+$('#q-a-'+r.id).value;applyAmend(r,r.pendingAmend,g2,false);r.pendingAmend=null;refresh()});
 }
 function salesConfirm(id){
@@ -1206,7 +1262,7 @@ VIEWS.bond={build(el){el.innerHTML=`
     <label class="field" data-repo hidden><span>Số ngày repo</span><input id="o-days" class="num" type="number" value="14" step="1"></label>
    </div>
    <div class="res" id="o-out"></div>
-   <div class="btns"><button class="btn" id="o-draft" type="button">Lưu nháp</button><button class="btn pri" id="o-submit" type="button">Kiểm tra & Submit</button></div>
+   <div class="btns"><span class="hint" data-noperm="deal.submit">Vai trò hiện tại chỉ xem định giá. Nhập deal do Maker (Front Office) thực hiện.</span><button class="btn" id="o-draft" type="button" data-perm="deal.submit">Lưu nháp</button><button class="btn pri" id="o-submit" type="button" data-perm="deal.submit">Kiểm tra & Submit</button></div>
    </div></div>`;
   S.bmode='y';S.oprod='OUT_BUY';
   $('#b-isin').oninput=()=>$('#b-vbma').click();
@@ -1266,7 +1322,7 @@ VIEWS.mm={build(el){el.innerHTML=`
     <label class="field"><span>Lãi suất (%/năm)</span><input id="m-rate" class="num" type="number" step="0.01"></label>
    </div>
    <div class="res" id="m-out"></div>
-   <div class="btns"><button class="btn" id="m-draft" type="button">Lưu nháp</button><button class="btn pri" id="m-submit" type="button">Kiểm tra & Submit</button></div>
+   <div class="btns"><span class="hint" data-noperm="deal.submit">Vai trò hiện tại chỉ xem định giá. Nhập deal do Maker (Front Office) thực hiện.</span><button class="btn" id="m-draft" type="button" data-perm="deal.submit">Lưu nháp</button><button class="btn pri" id="m-submit" type="button" data-perm="deal.submit">Kiểm tra & Submit</button></div>
    <div class="hint">Gợi ý demo: NHTM Beta đang dùng gần hết DSL. Gửi 200 tỷ cho Beta sẽ bị HOLD ở bước 2.</div></div>
   <div class="card"><h2>Biểu lãi suất VNIBOR tham chiếu</h2><div class="hint">Lãi suất deal được so với VNIBOR cùng kỳ hạn ở bước 1 của Pre-deal check.</div>
    <div class="tscroll"><table class="t"><thead><tr><th>Kỳ hạn</th>${Object.keys(VNIBOR).map(t=>`<th class="r">${t}</th>`).join('')}</tr></thead><tbody><tr><td>VNIBOR</td>${Object.values(VNIBOR).map(v=>`<td class="r num">${nf(v,2)}</td>`).join('')}</tr></tbody></table></div></div></div>`;
@@ -1309,13 +1365,13 @@ VIEWS.limits={build(el){el.innerHTML=`
   $('#l-sl').onclick=()=>{RISK.stopSim=!RISK.stopSim;RISK.loss.day=RISK.stopSim?2.15:.45;RISK.pnl=RISK.stopSim?-2.15:1.43;toast(RISK.stopSim?'Lỗ ngày vượt Stop-loss: desk TRADING01 bị phong tỏa, chỉ nhận lệnh đóng trạng thái.':'Đã khôi phục P&L bình thường.',RISK.stopSim?'bad':'good');refresh()};},
 update(){
   $('#l-sl').textContent=RISK.stopSim?'Khôi phục P&L bình thường':'Mô phỏng chạm Stop-loss ngày';
-  $('#l-cp').innerHTML=`<thead><tr><th>Đối tác</th><th>Loại</th><th style="min-width:190px">DSL · thanh toán ngày</th><th style="min-width:190px">PSL · trước thanh toán</th><th></th></tr></thead><tbody>${CP.map(c=>{const u=cpUse(c.code);const pend=S.inau.some(x=>x.table==='MDCOUNTERPARTYLIMIT'&&x.key===c.code);return`<tr><td><b>${c.name}</b><div class="hint num">CIF ${c.cif}</div></td><td>${c.type}</td><td>${meter('',u.d,c.dsl,'')}</td><td>${meter('',u.p,c.psl,'')}</td><td>${pend?'<span class="pill warn">Chờ duyệt</span>':`<button class="btn sm" data-ed="${c.code}">Đề xuất sửa</button>`}</td></tr>`}).join('')}</tbody>`;
+  $('#l-cp').innerHTML=`<thead><tr><th>Đối tác</th><th>Loại</th><th style="min-width:190px">DSL · thanh toán ngày</th><th style="min-width:190px">PSL · trước thanh toán</th><th></th></tr></thead><tbody>${CP.map(c=>{const u=cpUse(c.code);const pend=S.inau.some(x=>x.table==='MDCOUNTERPARTYLIMIT'&&x.key===c.code);return`<tr><td><b>${c.name}</b><div class="hint num">CIF ${c.cif}</div></td><td>${c.type}</td><td>${meter('',u.d,c.dsl,'')}</td><td>${meter('',u.p,c.psl,'')}</td><td>${pend?'<span class="pill warn">Chờ duyệt</span>':`<button class="btn sm" data-ed="${c.code}" data-perm="cfg.edit">Đề xuất sửa</button>`}</td></tr>`}).join('')}</tbody>`;
   $$('[data-ed]').forEach(b=>b.onclick=()=>proposeModal('MDCOUNTERPARTYLIMIT',b.dataset.ed));
   const p=positions(),tr=desk('TRADING01');
   $('#l-nop').innerHTML=`<thead><tr><th>Đồng tiền</th><th class="r">Đầu ngày</th><th class="r">Phát sinh</th><th class="r">Hiện tại</th><th>Trạng thái</th></tr></thead><tbody>${Object.keys(p).map(k=>{const d=p[k]-(RISK.pos[k]||0);return`<tr><td><b>${k}</b></td><td class="r num">${nf(RISK.pos[k]||0,2)}</td><td class="r num">${d>=0?'+':''}${nf(d,2)}</td><td class="r num"><b>${nf(p[k],2)}</b></td><td><span class="pill ${p[k]>=0?'info':'warn'}">${p[k]>=0?'Long':'Short'}</span></td></tr>`}).join('')}</tbody>`;
   const n=nopTotal(p);$('#l-nopm').innerHTML=meter('NOP Intraday (max Σ trường, Σ đoản)',n,tr.nopIntra,'M USD',2)+meter('NOP Overnight (áp dụng cuối ngày)',n,tr.nopOver,'M USD',2);
   const fi=desk('ALMFI');
-  $('#l-sl-m').innerHTML=(RISK.loss.day>=tr.slDay?`<div class="note bad">TRADING01 đang bị phong tỏa nhập lệnh mới. Chỉ chấp nhận lệnh làm giảm trạng thái.</div>`:'')+meter('Stop-loss ngày (Intraday)',RISK.loss.day,tr.slDay,'tỷ',2)+meter('Stop-loss tháng',RISK.loss.month+(RISK.stopSim?1.7:0),tr.slMonth,'tỷ',2)+meter('Stop-loss năm',RISK.loss.year+(RISK.stopSim?1.7:0),tr.slYear,'tỷ',2)+meter('PV01 · ALM & Fixed Income (lãi suất dịch 0,01%)',pv01Use(),fi.pv01,'triệu',1);
+  $('#l-sl-m').innerHTML=(RISK.loss.day>=tr.slDay?`<div class="note bad">TRADING01 đang bị phong tỏa nhập lệnh mới. Chỉ chấp nhận lệnh làm giảm trạng thái.</div>`:'')+meter('Stop-loss ngày (Intraday)',RISK.loss.day,tr.slDay,'tỷ',2)+meter('Stop-loss tháng',RISK.loss.month+(RISK.stopSim?1.7:0),tr.slMonth,'tỷ',2)+meter('Stop-loss năm',RISK.loss.year+(RISK.stopSim?1.7:0),tr.slYear,'tỷ',2)+meter('PV01 · ALM & Fixed Income (lãi suất dịch 0.01%)',pv01Use(),fi.pv01,'triệu',1);
   $('#l-dl').innerHTML=`<thead><tr><th>Sản phẩm</th>${['SPOT','FWD','SWAP','OUT_BUY','REPO','PLACE'].map(k=>`<th class="r">${PROD[k]}</th>`).join('')}</tr></thead><tbody><tr><td>Hạn mức / deal</td>${['SPOT','FWD','SWAP'].map(k=>`<td class="r num">${DEALER_LIM[k]}M USD</td>`).join('')}${['OUT_BUY','REPO','PLACE'].map(k=>`<td class="r num">${DEALER_LIM[k]} tỷ</td>`).join('')}</tr></tbody>`;
 }};
 
@@ -1329,12 +1385,12 @@ VIEWS.alm={build(el){el.innerHTML=`
   <div class="card"><h2>Repricing Gap & ΔNII</h2><div class="tscroll"><table class="t" id="a-rp"></table></div>
    <label class="field"><span>Kịch bản lãi suất Δr: <b id="a-drl"></b></span><input type="range" id="a-dr" min="-200" max="200" step="25" value="100"></label>
    <div class="res" id="a-nii"></div></div></div>
-  <div class="g2"><div class="card"><h2>Đường cong FTP (ALM Desk)</h2><div class="tscroll"><table class="t" id="a-ftp"></table></div><div class="note">Ví dụ: chi nhánh huy động 12 tháng 5,20%, bán vốn cho ALM theo FTP mua 5,75% → biên huy động +0,55%. Cho vay 12 tháng 8,90%, mua vốn FTP bán 6,35% → biên tín dụng +2,55%. Rủi ro kỳ hạn và thanh khoản tập trung về Khối Nguồn vốn.</div></div>
+  <div class="g2"><div class="card"><h2>Đường cong FTP (ALM Desk)</h2><div class="tscroll"><table class="t" id="a-ftp"></table></div><div class="note">Ví dụ: chi nhánh huy động 12 tháng 5.20%, bán vốn cho ALM theo FTP mua 5.75% → biên huy động +0.55%. Cho vay 12 tháng 8.90%, mua vốn FTP bán 6.35% → biên tín dụng +2.55%. Rủi ro kỳ hạn và thanh khoản tập trung về Khối Nguồn vốn.</div></div>
   <div class="card tight"><div class="card-h" style="padding:14px 16px 0"><h2>Dealer KPI Scorecard</h2><span class="hint">Lũy kế tháng 10/2026</span></div><div class="tscroll" style="padding-top:8px"><table class="t" id="a-kpi"></table></div></div></div>`;
   $('#a-dr').oninput=almNii;},
 update(){
   const car=55000/466700*100;
-  $('#a-basel').innerHTML=[['CAR · Hệ số an toàn vốn',car,8,'Vốn tự có 55.000 / RWA 466.700 (TD 412.000 + TT 18.500 + HĐ 36.200)'],['LCR · Khả năng chi trả 30 ngày',128,100,'HQLA / dòng tiền ra ròng kịch bản khủng hoảng'],['NSFR · Nguồn vốn ổn định ròng',112,100,'Nguồn vốn ổn định sẵn có / yêu cầu'],['Hit ratio FX Sales (phiên demo)',S.sales.quoted?S.sales.hit/S.sales.quoted*100:91,85,S.sales.quoted?`${S.sales.hit}/${S.sales.quoted} lần chào giá`:'Số liệu tháng · mục tiêu ≥ 85%']]
+  $('#a-basel').innerHTML=[['CAR · Hệ số an toàn vốn',car,8,'Vốn tự có 55,000 / RWA 466,700 (TD 412,000 + TT 18,500 + HĐ 36,200)'],['LCR · Khả năng chi trả 30 ngày',128,100,'HQLA / dòng tiền ra ròng kịch bản khủng hoảng'],['NSFR · Nguồn vốn ổn định ròng',112,100,'Nguồn vốn ổn định sẵn có / yêu cầu'],['Hit ratio FX Sales (phiên demo)',S.sales.quoted?S.sales.hit/S.sales.quoted*100:91,85,S.sales.quoted?`${S.sales.hit}/${S.sales.quoted} lần chào giá`:'Số liệu tháng · mục tiêu ≥ 85%']]
     .map(([k,v,m,s])=>`<div class="kpi"><div class="k">${k}</div><div class="v">${nf(v,1)}%</div><div class="s"><span class="pill ${v>=m?'good':'bad'}">${v>=m?'Đạt':'Không đạt'} ≥ ${m}%</span> ${s}</div></div>`).join('');
   let cum=0;$('#a-gap').innerHTML=`<thead><tr><th>Thang</th><th class="r">Dòng vào</th><th class="r">Dòng ra</th><th class="r">Gap</th><th class="r">Gap lũy kế</th></tr></thead><tbody>${GAP.b.map((b,i)=>{const g=GAP.inn[i]-GAP.out[i];cum+=g;return`<tr><td>${b}</td><td class="r num">${nf(GAP.inn[i])}</td><td class="r num">${nf(GAP.out[i])}</td><td class="r num ${g>=0?'':'dn'}">${g>=0?'+':''}${nf(g)}</td><td class="r num">${cum>=0?'+':''}${nf(cum)}</td></tr>`}).join('')}</tbody>`;
   gapChart();
@@ -1383,7 +1439,7 @@ const pendingOf=(t,k)=>S.inau.some(x=>x.table===t&&x.key===k);
 const pendPill=(t,k)=>pendingOf(t,k)?'<span class="pill warn">Pending approval</span>':'';
 const mkDiff=rows=>rows.filter(([,a,b])=>String(a)!==String(b));
 const diffNote=df=>df.length?`<div class="note"><b>Thay đổi so với cấu hình hiện hành</b><br>${df.map(([f,a,b])=>`${esc(f)}: ${esc(a)} → <b>${esc(b)}</b>`).join('<br>')}</div>`:'<div class="hint">Chưa có thay đổi.</div>';
-const editBtn=(id,t,k)=>pendingOf(t,k)?'<span class="pill warn">Pending approval</span>':`<button class="btn sm" id="${id}" type="button">Chỉnh sửa</button>`;
+const editBtn=(id,t,k)=>pendingOf(t,k)?'<span class="pill warn">Pending approval</span>':`<button class="btn sm" id="${id}" type="button" data-perm="cfg.edit">Chỉnh sửa</button>`;
 function permHint(){return hasPerm('cfg.edit')?`Bạn (${R().uid}) được đề xuất thay đổi. Người phê duyệt phải là tài khoản khác có quyền phê duyệt cấu hình.`:`Vai trò ${R().lane} chỉ được xem. Đổi sang Quản trị hoặc Checker 1 (QTRR) để đề xuất thay đổi.`}
 function needEdit(){if(!hasPerm('cfg.edit')){toast('Vai trò hiện tại không có quyền đề xuất thay đổi. Đổi sang Quản trị hoặc Checker 1.','bad');return false}return true}
 function propose(table,key,label,diff,apply){
@@ -1411,7 +1467,7 @@ function proposeModal(table,key){
   if(!needEdit())return;
   const E=EDIT[table],rec=E.list().find(x=>x[E.k]===key);const fs=Object.keys(E.fields).filter(f=>rec[f]!=null);
   modal({title:`Chỉnh sửa ${TBL[table].toLowerCase()} · ${E.label(rec)}`,body:`<p style="margin:0" class="ink2">Thay đổi được lưu vào INAU và chỉ có hiệu lực (LIVE) khi một người khác phê duyệt.</p><div class="fields">${fs.map(f=>`<label class="field"><span>${E.fields[f]}</span><input class="num" type="number" data-f="${f}" value="${rec[f]}"></label>`).join('')}</div>`,
-    actions:[{label:'Gửi chờ duyệt',cls:'pri',onClick:root=>{const after={},diff=[];$$('[data-f]',root).forEach(i=>{const f=i.dataset.f,v=+i.value;if(v!==rec[f]){after[f]=v;diff.push([E.fields[f],rec[f],v])}});return propose(table,key,E.label(rec),diff,()=>Object.assign(rec,after))}}]});
+    actions:[{label:'Gửi chờ duyệt',cls:'pri',onClick:root=>{const after={},diff=[];$$('[data-f]',root).forEach(i=>{const f=i.dataset.f,v=+i.value;if(v!==rec[f]){after[f]=v;diff.push([E.fields[f],rec[f].toLocaleString('en-US'),v.toLocaleString('en-US')])}});return propose(table,key,E.label(rec),diff,()=>Object.assign(rec,after))}}]});
 }
 const tg=(l,u,inp)=>`<div class="tg"><div><b>${l}</b><span>${u}</span></div>${inp}</div>`;
 
@@ -1445,7 +1501,7 @@ const wfsCard=([n,t,who,cd,k],w)=>`<div class="wfs ${k}"><span class="n">${n}</s
 function wfRender(){
   let w=wfByCode(S.wfSel);if(!w){w=CFG.wfs[0];S.wfSel=w.code}
   $('#w-list').innerHTML=`<thead><tr><th>Mã</th><th>Tên Workflow</th><th>Nhóm</th><th>Phạm vi áp dụng</th><th class="r">Ưu tiên</th><th>Phiên bản</th><th>Trạng thái</th><th></th></tr></thead><tbody>${CFG.wfs.map(x=>{const pend=pendingOf('WORKFLOW',x.code);return`<tr class="click ${x.code===S.wfSel?'sel':''}" data-w="${x.code}"><td style="white-space:nowrap"><b>${x.code}</b></td><td>${esc(x.name)}${x.isDefault?' <span class="pill">Mặc định</span>':''}</td><td>${WF_G[x.group]}</td><td style="min-width:180px">${esc(scopeTxt(x))}</td><td class="r num">${x.prio}</td><td>v${x.ver}</td><td><span class="pill ${x.status==='Active'?'good':''}">${x.status}</span>${pend?' <span class="pill warn">Pending</span>':''}</td>
-    <td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-wa="edit" data-c="${x.code}" ${pend?'disabled':''}>Sửa</button><button class="btn sm" data-wa="clone" data-c="${x.code}">Nhân bản</button><button class="btn sm" data-wa="toggle" data-c="${x.code}" ${pend||x.isDefault?'disabled':''} title="${x.isDefault?'Workflow mặc định luôn Active':''}">${x.status==='Active'?'Ngừng':'Kích hoạt'}</button><button class="btn sm danger" data-wa="del" data-c="${x.code}" ${pend||x.isDefault?'disabled':''} title="${x.isDefault?'Không xóa Workflow mặc định':''}">Xóa</button></div></td></tr>`}).join('')}
+    <td><div class="btns" style="flex-wrap:nowrap"><button class="btn sm" data-wa="edit" data-perm="cfg.edit" data-c="${x.code}" ${pend?'disabled':''}>Sửa</button><button class="btn sm" data-wa="clone" data-perm="cfg.edit" data-c="${x.code}">Nhân bản</button><button class="btn sm" data-wa="toggle" data-perm="cfg.edit" data-c="${x.code}" ${pend||x.isDefault?'disabled':''} title="${x.isDefault?'Workflow mặc định luôn Active':''}">${x.status==='Active'?'Ngừng':'Kích hoạt'}</button><button class="btn sm danger" data-wa="del" data-perm="cfg.edit" data-c="${x.code}" ${pend||x.isDefault?'disabled':''} title="${x.isDefault?'Không xóa Workflow mặc định':''}">Xóa</button></div></td></tr>`}).join('')}
     ${S.inau.filter(x=>x.table==='WORKFLOW'&&x.key.startsWith('new:')).map(x=>`<tr><td><b>${x.key.slice(4)}</b></td><td colspan="5" class="muted">${esc(x.label)}</td><td><span class="pill warn">Pending tạo mới</span></td><td></td></tr>`).join('')}</tbody>`;
   $$('#w-list tr[data-w]').forEach(tr=>tr.onclick=e=>{if(e.target.closest('button'))return;S.wfSel=tr.dataset.w;wfRender()});
   $$('[data-wa]').forEach(b=>b.onclick=()=>{const c=b.dataset.c,a=b.dataset.wa;if(a==='edit')wfEditModal('edit',c);if(a==='clone')wfEditModal('clone',c);if(a==='toggle')wfToggle(c);if(a==='del')wfDelete(c)});
@@ -1546,9 +1602,9 @@ function wfSimModal(){
 }
 VIEWS.wf={build(el){el.innerHTML=`
   <div class="vhead"><div><h1>Thiết lập Workflow phê duyệt</h1><p>Mỗi Workflow áp dụng cho một nhóm sản phẩm, có điều kiện giá trị và ưu tiên. Deal được gán Workflow Active có ưu tiên cao nhất khớp điều kiện, nếu không khớp thì dùng Workflow mặc định. Mọi thao tác tạo, sửa, ngừng, xóa đều qua Maker-Checker.</p></div>
-  <div class="btns"><button class="btn" id="w-sim" type="button">Mô phỏng</button><button class="btn pri" id="w-new" type="button">+ Tạo Workflow</button></div></div>
+  <div class="btns"><button class="btn" id="w-sim" type="button">Mô phỏng</button><button class="btn pri" id="w-new" data-perm="cfg.edit" type="button">+ Tạo Workflow</button></div></div>
   <div class="card tight"><div class="tscroll"><table class="t" id="w-list"></table></div></div>
-  <div class="card"><div class="card-h"><div style="min-width:0"><h2 id="w-title"></h2><div class="hint" id="w-scope"></div></div><div class="btns"><span id="w-ver"></span><button class="btn sm" id="w-e" type="button">Sửa</button></div></div>
+  <div class="card"><div class="card-h"><div style="min-width:0"><h2 id="w-title"></h2><div class="hint" id="w-scope"></div></div><div class="btns"><span id="w-ver"></span><button class="btn sm" id="w-e" data-perm="cfg.edit" type="button">Sửa</button></div></div>
     <div class="wfp" id="w-pipe"></div><div class="wfrow-l">Nhánh Override khi Pre-deal check vi phạm (dùng chung)</div><div class="wfp" id="w-exc"></div></div>
   <div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Lịch sử phiên bản</h2><span class="hint" id="w-perm"></span></div><div class="tscroll" style="padding-top:8px"><table class="t" id="w-hist"></table></div></div>`;
   $('#w-new').onclick=()=>wfEditModal('create');$('#w-sim').onclick=wfSimModal;$('#w-e').onclick=()=>wfEditModal('edit',S.wfSel);},
@@ -1603,7 +1659,7 @@ function permModal(){
   const root=modal({title:'Chỉnh sửa ma trận phân quyền (SYS_ROLE_PERMISSION)',size:'xl',body:`<div class="tscroll"><table class="t" id="pm-t"></table></div><div id="pm-w"></div>`,
     actions:[{label:'Gửi chờ duyệt',cls:'pri',onClick:()=>{const pd=permDraft(),c=sodConflicts(pd);if(c.length){toast('Vi phạm SoD: '+c.join(', ')+' vừa nhập deal vừa duyệt/thẩm định.','bad');return false}
       const nd=JSON.parse(JSON.stringify(pd));if(!PROLES.some(r=>nd['cfg.approve'].includes(r))){toast('Phải có ít nhất một vai trò được phê duyệt cấu hình.','bad');return false}
-      const ok=propose('ROLE_PERMISSION','matrix','Ma trận phân quyền',permDiff(),()=>{for(const k in nd)PERM[k]=nd[k];buildNav()});if(ok)S.permD=null;return ok}}]});
+      const ok=propose('ROLE_PERMISSION','matrix','Ma trận phân quyền',permDiff(),()=>{for(const k in nd)PERM[k]=nd[k];buildNav();userUI()});if(ok)S.permD=null;return ok}}]});
   const draw=()=>{const pd=permDraft(),cf=sodConflicts(pd);
     $('#pm-t',root).innerHTML=`<thead><tr><th>Chức năng</th>${PROLES.map(r=>`<th class="r">${ROLES[r].lane}</th>`).join('')}</tr></thead><tbody>${PERM_FN.map(([k,l])=>`<tr><td style="min-width:220px">${l}</td>${PROLES.map(r=>`<td class="r"><input type="checkbox" class="pmx" data-k="${k}" data-r="${r}" ${pd[k].includes(r)?'checked':''} aria-label="${l} · ${ROLES[r].lane}"></td>`).join('')}</tr>`).join('')}</tbody>`;
     $('#pm-w',root).innerHTML=(cf.length?`<div class="note bad">Vi phạm SoD: ${cf.join(', ')} vừa có quyền nhập deal vừa có quyền duyệt, Risk Review hoặc ký.</div>`:'')+diffNote(permDiff());
@@ -1631,19 +1687,19 @@ function delegModal(){
 VIEWS.users={build(el){el.innerHTML=`
   <div class="vhead"><div><h1>Người dùng, Delegation & phân quyền</h1><p>Tài khoản đồng bộ từ Active Directory. Khóa tài khoản, Delegation và ma trận phân quyền đều theo Maker-Checker.</p></div></div>
   <div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Tài khoản người dùng</h2><span class="hint">${USERS.length} tài khoản</span></div><div class="tscroll" style="padding-top:8px"><table class="t" id="us-t"></table></div></div>
-  <div class="g2"><div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Delegation ký tạm thời</h2><button class="btn sm pri" id="us-dgb" type="button">Tạo Delegation</button></div><div class="tscroll" style="padding-top:8px"><table class="t" id="us-dg"></table></div></div>
+  <div class="g2"><div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Delegation ký tạm thời</h2><button class="btn sm pri" id="us-dgb" data-perm="cfg.edit" type="button">Tạo Delegation</button></div><div class="tscroll" style="padding-top:8px"><table class="t" id="us-dg"></table></div></div>
   <div class="card"><div class="card-h"><h2>Ma trận phân quyền</h2><div id="us-ph"></div></div><dl class="kv" id="us-pm"></dl></div></div>
   <div class="hint" id="us-perm"></div>`;
   $('#us-dgb').onclick=delegModal;},
 update(){
   const ad=activeDeleg();
-  $('#us-t').innerHTML=`<thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò</th><th>Đơn vị</th><th>Trạng thái</th><th>Đăng nhập gần nhất</th><th></th></tr></thead><tbody>${USERS.map(u=>{const dg=ad.find(g=>g.to===u.uid);return`<tr><td><b>${u.uid}</b></td><td>${u.name}</td><td>${ROLES[u.role].lane}${dg?` <span class="pill acc">Delegation cấp ${dg.level}</span>`:''}</td><td>${u.unit}</td><td><span class="pill ${u.status==='Khóa'?'bad':'good'}">${u.status}</span></td><td>${u.last}</td><td>${pendingOf('USER',u.uid)?'<span class="pill warn">Pending approval</span>':`<button class="btn sm ${u.status==='Khóa'?'':'danger'}" data-lk="${u.uid}">${u.status==='Khóa'?'Mở khóa':'Khóa'}</button>`}</td></tr>`}).join('')}</tbody>`;
+  $('#us-t').innerHTML=`<thead><tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò</th><th>Đơn vị</th><th>Trạng thái</th><th>Đăng nhập gần nhất</th><th></th></tr></thead><tbody>${USERS.map(u=>{const dg=ad.find(g=>g.to===u.uid);return`<tr><td><b>${u.uid}</b></td><td>${u.name}</td><td>${ROLES[u.role].lane}${dg?` <span class="pill acc">Delegation cấp ${dg.level}</span>`:''}</td><td>${u.unit}</td><td><span class="pill ${u.status==='Khóa'?'bad':'good'}">${u.status}</span></td><td>${u.last}</td><td>${pendingOf('USER',u.uid)?'<span class="pill warn">Pending approval</span>':`<button class="btn sm ${u.status==='Khóa'?'':'danger'}" data-lk="${u.uid}" data-perm="cfg.edit">${u.status==='Khóa'?'Mở khóa':'Khóa'}</button>`}</td></tr>`}).join('')}</tbody>`;
   $$('[data-lk]').forEach(b=>b.onclick=()=>{const u=USERS.find(x=>x.uid===b.dataset.lk);if(u.uid===R().uid){toast('Không thể tự khóa tài khoản đang đăng nhập.','bad');return}const to=u.status==='Khóa'?'Hoạt động':'Khóa';
     confirmModal(`${to==='Khóa'?'Khóa':'Mở khóa'} tài khoản ${u.uid}`,`Gửi đề xuất ${to==='Khóa'?'khóa':'mở khóa'} tài khoản ${u.uid} · ${u.name}. Thay đổi có hiệu lực khi được phê duyệt.`,'Gửi chờ duyệt',()=>propose('USER',u.uid,`${u.uid} · ${u.name}`,[['Trạng thái',u.status,to]],()=>{u.status=to}))});
-  $('#us-dg').innerHTML=`<thead><tr><th>Mã</th><th>Ủy quyền</th><th>Cấp</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr></thead><tbody>${CFG.deleg.length?CFG.deleg.map(g=>{const [s,c]=dgState(g);return`<tr><td style="white-space:nowrap">${g.id}</td><td>${g.from} → <b>${g.to}</b><div class="hint">${esc(g.reason)}</div></td><td>${g.level}</td><td style="white-space:nowrap">${D.f(D.p(g.fromD))} – ${D.f(D.p(g.toD))}</td><td><span class="pill ${c}">${s}</span></td><td>${s==='Hết hạn'?'':pendingOf('DELEGATION',g.id)?'<span class="pill warn">Pending</span>':`<button class="btn sm danger" data-rv="${g.id}">Thu hồi</button>`}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">Chưa có Delegation.</div></td></tr>'}</tbody>`;
+  $('#us-dg').innerHTML=`<thead><tr><th>Mã</th><th>Ủy quyền</th><th>Cấp</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr></thead><tbody>${CFG.deleg.length?CFG.deleg.map(g=>{const [s,c]=dgState(g);return`<tr><td style="white-space:nowrap">${g.id}</td><td>${g.from} → <b>${g.to}</b><div class="hint">${esc(g.reason)}</div></td><td>${g.level}</td><td style="white-space:nowrap">${D.f(D.p(g.fromD))} – ${D.f(D.p(g.toD))}</td><td><span class="pill ${c}">${s}</span></td><td>${s==='Hết hạn'?'':pendingOf('DELEGATION',g.id)?'<span class="pill warn">Pending</span>':`<button class="btn sm danger" data-rv="${g.id}" data-perm="cfg.edit">Thu hồi</button>`}</td></tr>`}).join(''):'<tr><td colspan="6"><div class="empty">Chưa có Delegation.</div></td></tr>'}</tbody>`;
   $$('[data-rv]').forEach(b=>b.onclick=()=>{const g=CFG.deleg.find(x=>x.id===b.dataset.rv);propose('DELEGATION',g.id,'Thu hồi '+g.id,[['Delegation',`${g.from} → ${g.to}`,'Thu hồi']],()=>{CFG.deleg=CFG.deleg.filter(x=>x!==g)})});
   $('#us-pm').innerHTML=PERM_FN.map(([k,l])=>`<dt>${l}</dt><dd class="txt">${PERM[k].map(r=>`<span class="pill acc" style="margin:0 0 3px 4px">${ROLES[r].lane}</span>`).join('')||'—'}</dd>`).join('');
-  $('#us-ph').innerHTML=pendingOf('ROLE_PERMISSION','matrix')?'<span class="pill warn">Pending approval</span>':'<button class="btn sm" id="us-pe" type="button">Chỉnh sửa</button>';
+  $('#us-ph').innerHTML=pendingOf('ROLE_PERMISSION','matrix')?'<span class="pill warn">Pending approval</span>':'<button class="btn sm" id="us-pe" data-perm="cfg.edit" type="button">Chỉnh sửa</button>';
   const pe=$('#us-pe');if(pe)pe.onclick=permModal;
   $('#us-perm').textContent=permHint();
 }};
@@ -1673,7 +1729,7 @@ const intgVal=(k,t)=>t==='sw'?yn(CFG.intg[k]):t==='number'?nf(CFG.intg[k]):CFG.i
 function intgRow([k,l,u,t]){const v=CFG.intg[k];const inp=t==='sw'?`<input type="checkbox" class="sw" id="op-i-${k}" ${v?'checked':''} aria-label="${l}">`:Array.isArray(t)?`<select class="inp" id="op-i-${k}">${t.map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select>`:`<input class="inp ${t==='number'?'num':''}" type="${t}" id="op-i-${k}" value="${esc(v)}">`;return tg(l,u,inp)}
 VIEWS.ops={build(el){el.innerHTML=`
   <div class="vhead"><div><h1>Lịch ngày nghỉ, EOD & tích hợp</h1><p>Lịch ngày nghỉ dùng để tính value date và ngày đáo hạn. EOD chạy Revaluation MtM, kiểm tra NOP Overnight và đối chiếu với Core T24.</p></div></div>
-  <div class="g2"><div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Lịch ngày nghỉ</h2><button class="btn sm pri" id="op-ha" type="button">Thêm ngày nghỉ</button></div><div class="tscroll" style="padding-top:8px"><table class="t" id="op-hol"></table></div><div class="note" id="op-hint" style="margin:0 16px 16px"></div></div>
+  <div class="g2"><div class="card tight"><div class="card-h" style="padding:16px 20px 0"><h2>Lịch ngày nghỉ</h2><button class="btn sm pri" id="op-ha" data-perm="cfg.edit" type="button">Thêm ngày nghỉ</button></div><div class="tscroll" style="padding-top:8px"><table class="t" id="op-hol"></table></div><div class="note" id="op-hint" style="margin:0 16px 16px"></div></div>
   <div class="card"><div class="card-h"><h2>End of Day (EOD)</h2><span class="hint">Ngày làm việc 22/10/2026</span></div><ol class="steps" id="op-eod"></ol>
     <div class="btns"><button class="btn pri" id="op-run" type="button">Chạy EOD</button><span class="hint" id="op-last">Chỉ Quản trị hoặc Back Office được chạy</span></div></div></div>
   <div class="card"><div class="card-h"><h2>Cấu hình tích hợp</h2><div id="op-ih"></div></div><dl class="kv" id="op-int"></dl></div>`;
@@ -1683,11 +1739,11 @@ VIEWS.ops={build(el){el.innerHTML=`
       return propose('HOLIDAY',d,`${D.f(dd)} · ${n}`,[['Ngày nghỉ','—',`${D.f(dd)} ${n}`]],()=>{CFG.hol.push({d,n});CFG.hol.sort((a,b)=>a.d<b.d?-1:1)})}}]})};
   $('#op-run').onclick=runEod;opEod();},
 update(){
-  $('#op-hol').innerHTML=`<thead><tr><th>Ngày</th><th>Thứ</th><th>Tên ngày nghỉ</th><th></th></tr></thead><tbody>${CFG.hol.map(h=>{const d=D.p(h.d);return`<tr><td><b>${D.f(d)}</b></td><td>${WD[d.getDay()]}</td><td>${esc(h.n)}</td><td>${pendingOf('HOLIDAY',h.d)?'<span class="pill warn">Pending</span>':`<button class="btn sm danger" data-hx="${h.d}">Xóa</button>`}</td></tr>`}).join('')}</tbody>`;
+  $('#op-hol').innerHTML=`<thead><tr><th>Ngày</th><th>Thứ</th><th>Tên ngày nghỉ</th><th></th></tr></thead><tbody>${CFG.hol.map(h=>{const d=D.p(h.d);return`<tr><td><b>${D.f(d)}</b></td><td>${WD[d.getDay()]}</td><td>${esc(h.n)}</td><td>${pendingOf('HOLIDAY',h.d)?'<span class="pill warn">Pending</span>':`<button class="btn sm danger" data-hx="${h.d}" data-perm="cfg.edit">Xóa</button>`}</td></tr>`}).join('')}</tbody>`;
   $$('[data-hx]').forEach(b=>b.onclick=()=>{const h=CFG.hol.find(x=>x.d===b.dataset.hx);propose('HOLIDAY',h.d,`Xóa ${D.f(D.p(h.d))}`,[['Ngày nghỉ',`${D.f(D.p(h.d))} ${h.n}`,'Xóa']],()=>{CFG.hol=CFG.hol.filter(x=>x!==h)})});
   $('#op-hint').innerHTML=`Spot T+2 hôm nay có value date <b>${D.f(D.addW(BD,2))}</b>, kỳ hạn 1M đáo hạn <b>${D.f(tenorDate(D.addW(BD,2),'1M'))}</b>.`;
   $('#op-int').innerHTML=INTG.map(([k,l,,t])=>`<dt>${l}</dt><dd>${esc(intgVal(k,t))}${t==='number'?(k==='retry'?' lần':' giây'):''}</dd>`).join('');
-  $('#op-ih').innerHTML=pendingOf('INTEGRATION','main')?'<span class="pill warn">Pending approval</span>':'<button class="btn sm" id="op-ie" type="button">Chỉnh sửa</button>';
+  $('#op-ih').innerHTML=pendingOf('INTEGRATION','main')?'<span class="pill warn">Pending approval</span>':'<button class="btn sm" id="op-ie" data-perm="cfg.edit" type="button">Chỉnh sửa</button>';
   const ie=$('#op-ie');if(ie)ie.onclick=()=>{if(!needEdit())return;modal({title:'Chỉnh sửa cấu hình tích hợp',size:'lg',body:INTG.map(intgRow).join(''),
     actions:[{label:'Gửi chờ duyệt',cls:'pri',onClick:r=>{const v={};INTG.forEach(([k,,,t])=>{const e=$('#op-i-'+k,r);v[k]=t==='sw'?e.checked:t==='number'?+e.value:e.value});
       if(!(v.timeout>0)||v.retry<0||!(v.gap>0)){toast('Giá trị timeout, retry không hợp lệ.','bad');return false}
@@ -1713,11 +1769,11 @@ VIEWS.admin={build(el){el.innerHTML=`
   $('#a-hisb').onclick=hisModal;},
 update(){
   $('#a-tree').innerHTML=deskTree();
-  $('#a-desk').innerHTML=`<thead><tr><th>Master Desk</th><th class="r">NOP Intraday</th><th class="r">NOP Overnight</th><th class="r">Stop-loss ngày</th><th class="r">Stop-loss tháng</th><th class="r">PV01</th><th></th></tr></thead><tbody>${DESKS.map(d=>`<tr><td><b>${d.code}</b><div class="hint">${d.name}</div></td><td class="r num">${d.nopIntra??'—'}</td><td class="r num">${d.nopOver??'—'}</td><td class="r num">${d.slDay}</td><td class="r num">${d.slMonth}</td><td class="r num">${d.pv01??'—'}</td><td>${pendingOf('MDFXMASTERDESK',d.code)?'<span class="pill warn">Pending</span>':`<button class="btn sm" data-dk="${d.code}">Sửa</button>`}</td></tr>`).join('')}</tbody>`;
+  $('#a-desk').innerHTML=`<thead><tr><th>Master Desk</th><th class="r">NOP Intraday</th><th class="r">NOP Overnight</th><th class="r">Stop-loss ngày</th><th class="r">Stop-loss tháng</th><th class="r">PV01</th><th></th></tr></thead><tbody>${DESKS.map(d=>`<tr><td><b>${d.code}</b><div class="hint">${d.name}</div></td><td class="r num">${d.nopIntra??'—'}</td><td class="r num">${d.nopOver??'—'}</td><td class="r num">${d.slDay}</td><td class="r num">${d.slMonth}</td><td class="r num">${d.pv01??'—'}</td><td>${pendingOf('MDFXMASTERDESK',d.code)?'<span class="pill warn">Pending</span>':`<button class="btn sm" data-dk="${d.code}" data-perm="cfg.edit">Sửa</button>`}</td></tr>`).join('')}</tbody>`;
   $$('[data-dk]').forEach(b=>b.onclick=()=>proposeModal('MDFXMASTERDESK',b.dataset.dk));
   const ap=hasPerm('cfg.approve');
   $('#a-inau-h').textContent=ap?`Bạn (${R().uid}) được Approve các thay đổi do người khác đề xuất`:`Vai trò ${R().lane} không có quyền Approve cấu hình`;
-  $('#a-inau').innerHTML=`<thead><tr><th>Mã</th><th>Nhóm</th><th>Mục</th><th>Thay đổi</th><th>Maker</th><th></th></tr></thead><tbody>${S.inau.length?S.inau.map(x=>{const own=x.by===R().uid,en=ap&&!own;return`<tr><td>${x.id}</td><td>${TBL[x.table]}</td><td>${esc(x.label)}</td><td style="min-width:240px">${x.diff.map(([f,a,b])=>`${esc(f)}: ${esc(a)} → <b>${esc(b)}</b>`).join('<br>')}</td><td>${x.by} · ${x.t}</td><td><div class="btns"><button class="btn sm pri" data-ia="${x.id}" ${en?'':'disabled'} title="${own?'Không tự duyệt đề xuất của mình':ap?'':'Không có quyền Approve'}">Approve</button><button class="btn sm danger" data-ir="${x.id}" ${en?'':'disabled'}>Reject</button></div></td></tr>`}).join(''):`<tr><td colspan="6"><div class="empty">Không có thay đổi chờ duyệt. Đề xuất thay đổi ở các màn hình Quản trị hệ thống, rồi đổi sang vai trò có quyền Approve (Thẩm quyền cấp 3, cấp 4 hoặc Checker 1).</div></td></tr>`}</tbody>`;
+  $('#a-inau').innerHTML=`<thead><tr><th>Mã</th><th>Nhóm</th><th>Mục</th><th>Thay đổi</th><th>Maker</th><th></th></tr></thead><tbody>${S.inau.length?S.inau.map(x=>{const own=x.by===R().uid,en=ap&&!own;return`<tr><td>${x.id}</td><td>${TBL[x.table]}</td><td>${esc(x.label)}</td><td style="min-width:240px">${x.diff.map(([f,a,b])=>`${esc(f)}: ${esc(a)} → <b>${esc(b)}</b>`).join('<br>')}</td><td>${x.by} · ${x.t}</td><td><div class="btns"><button class="btn sm pri" data-ia="${x.id}" data-perm="cfg.approve" ${en?'':'disabled'} title="${own?'Không tự duyệt đề xuất của mình':ap?'':'Không có quyền Approve'}">Approve</button><button class="btn sm danger" data-ir="${x.id}" data-perm="cfg.approve" ${en?'':'disabled'}>Reject</button></div></td></tr>`}).join(''):`<tr><td colspan="6"><div class="empty">Không có thay đổi chờ duyệt. Đề xuất thay đổi ở các màn hình Quản trị hệ thống, rồi đổi sang vai trò có quyền Approve (Thẩm quyền cấp 3, cấp 4 hoặc Checker 1).</div></td></tr>`}</tbody>`;
   $$('[data-ia]').forEach(b=>b.onclick=()=>inauAct(b.dataset.ia,true));$$('[data-ir]').forEach(b=>b.onclick=()=>inauAct(b.dataset.ir,false));
   $('#a-his').innerHTML=HIS_HEAD+`<tbody>${S.his.slice(0,8).map(hisRow).join('')}</tbody>`;
 }};
@@ -1818,7 +1874,7 @@ function deskTree(){const ds=MDATA.desk,m=ds.filter(x=>x.level==='Master Desk');
 VIEWS.cat={build(el){el.innerHTML=`
   <div class="vhead"><div><h1>Quản lý danh mục</h1><p>Danh mục chung, danh mục FX và danh mục MM & GTCG. Thêm, sửa, ngừng sử dụng, xóa đều theo Maker-Checker. Bản ghi đang được giao dịch hoặc danh mục khác tham chiếu thì không xóa được, chỉ ngừng sử dụng.</p></div></div>
   <div class="catw"><nav class="card catnav" id="c-nav" aria-label="Danh mục"></nav>
-  <div class="card tight" style="min-width:0"><div class="card-h" style="padding:16px 20px 0"><div style="min-width:0"><h2 id="c-title"></h2><div class="hint" id="c-desc"></div></div><button class="btn pri" id="c-add" type="button">+ Thêm mới</button></div>
+  <div class="card tight" style="min-width:0"><div class="card-h" style="padding:16px 20px 0"><div style="min-width:0"><h2 id="c-title"></h2><div class="hint" id="c-desc"></div></div><button class="btn pri" id="c-add" data-perm="cfg.edit" type="button">+ Thêm mới</button></div>
     <div class="hint" style="padding:6px 20px 0">Bấm vào một dòng để xem chi tiết, sửa, ngừng sử dụng hoặc xóa.</div>
     <div class="btns" style="padding:12px 20px 0"><input class="inp" id="c-q" placeholder="Tìm theo mã, tên…" style="flex:1;min-width:180px" aria-label="Tìm kiếm"><select class="inp" id="c-st" style="width:auto" aria-label="Trạng thái"><option value="">Mọi trạng thái</option><option>Active</option><option>Inactive</option></select></div>
     <div class="tscroll" style="padding-top:10px"><table class="t" id="c-t"></table></div></div></div>
@@ -1834,7 +1890,7 @@ update(){
   const rows=c.rows().filter(r=>(!S.catSt||(r.status||'Active')===S.catSt)&&(!q||c.fields.some(f=>String(fieldVal(f,r)).toLowerCase().includes(q))));
   const newPend=S.inau.filter(i=>i.table==='CAT_'+c.id&&i.key.startsWith('new:'));
   $('#c-t').innerHTML=`<thead><tr>${fs.map(f=>`<th>${f.l}</th>`).join('')}<th class="r">Đang dùng</th><th>Trạng thái</th></tr></thead><tbody>${rows.map(r=>{const k=String(r[c.key]),pend=pendingOf('CAT_'+c.id,k),u=c.used(r);
-    return`<tr class="click" data-ck="${esc(k)}" tabindex="0" title="Bấm để xem, sửa, ngừng hoặc xóa">${fs.map((f,i)=>`<td${i===0||f.t!=='text'||String(fieldVal(f,r)).length<14?' style="white-space:nowrap"':''}>${i===0?'<b>':''}${esc(fieldVal(f,r))}${i===0?'</b>':''}</td>`).join('')}<td class="r num">${u||'—'}</td><td style="white-space:nowrap"><span class="pill ${actv(r)?'good':''}">${r.status||'Active'}</span>${pend?' <span class="pill warn">Pending</span>':''}</td></tr>`}).join('')}
+    return`${hasPerm('cfg.edit')?`<tr class="click" data-ck="${esc(k)}" tabindex="0" title="Bấm để xem, sửa, ngừng hoặc xóa">`:'<tr>'}${fs.map((f,i)=>`<td${i===0||f.t!=='text'||String(fieldVal(f,r)).length<14?' style="white-space:nowrap"':''}>${i===0?'<b>':''}${esc(fieldVal(f,r))}${i===0?'</b>':''}</td>`).join('')}<td class="r num">${u||'—'}</td><td style="white-space:nowrap"><span class="pill ${actv(r)?'good':''}">${r.status||'Active'}</span>${pend?' <span class="pill warn">Pending</span>':''}</td></tr>`}).join('')}
     ${newPend.map(i=>`<tr><td><b>${esc(i.key.slice(4))}</b></td><td colspan="${fs.length}" class="muted">${esc(i.label)}</td><td><span class="pill warn">Pending thêm mới</span></td></tr>`).join('')}
     ${!rows.length&&!newPend.length?`<tr><td colspan="${fs.length+2}"><div class="empty">Không có bản ghi phù hợp.</div></td></tr>`:''}</tbody>`;
   $$('#c-t tr[data-ck]').forEach(tr=>{tr.onclick=()=>catModal(S.cat,tr.dataset.ck);tr.onkeydown=e=>{if(e.key==='Enter')catModal(S.cat,tr.dataset.ck)}});
@@ -1875,6 +1931,7 @@ function tick(){
   let ch=false;for(const r of S.sales.reqs){if(r.status==='QUOTED'){const left=Math.max(0,Math.ceil((r.exp-Date.now())/1000));const c=$('#cd-'+r.id),b=$('#cdb-'+r.id);if(c)c.textContent=left+'s';if(b)b.style.width=(left/r.ttl*100)+'%';if(left<=0){r.status='EXPIRED';log({ref:r.id,act:'Hết hiệu lực giá (Timeout)',from:'QUOTED',to:'EXPIRED',user:'system'});ch=true}}}
   if(ch&&S.view==='sales')refresh();
 }
+const HASH0=(location.hash||'').slice(1);
 function boot(){
   $('#nojs').hidden=true;
   broadcast();seed();
@@ -1888,9 +1945,10 @@ function boot(){
     for(const li of lis){li.className='run';li.firstChild.textContent='… ';await sleep(420);li.className='ok';li.firstChild.textContent='✓ '}
     const r=($('input[name="lguser"]:checked')||{}).value||'maker';S.role=r;$('#t-role').value=r;log({ref:'Người dùng '+ROLES[r].uid,act:'Đăng nhập SSO',note:'Xác thực AD và kiểm tra quyền truy cập thành công',user:ROLES[r].uid});
     buildNav();userUI();await sleep(200);$('#login').hidden=true;
-    const h=(location.hash||'').slice(1);show(NAV.find(n=>n.id===h)&&allowed(h)?h:r==='branch'?'sales':r==='sysadm'?'wf':['risk','bo','head','alco'].includes(r)?'blot':'dash');
+    const h=S.deep??HASH0;S.deep='';show(NAV.find(n=>n.id===h)&&allowed(h)?h:r==='branch'?'sales':r==='sysadm'?'wf':['risk','bo','head','alco'].includes(r)?'blot':'dash','root');
     S.filter=r==='maker'?'all':'mine';refresh();toast(`Xin chào ${ROLES[r].name} · ${ROLES[r].title}`)};
-  buildNav();userUI();show('dash');feedDot();
+  buildNav();userUI();show('dash','root');
+  $('#t-back').onclick=goBack;$('#t-close').onclick=()=>show(home());$('#t-bc').onclick=e=>{if(e.target.closest('[data-home]'))show(home())};feedDot();
   setInterval(tick,1000);
 }
 boot();
